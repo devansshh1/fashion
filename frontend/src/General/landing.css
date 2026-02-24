@@ -1,0 +1,163 @@
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+html, body{
+    background:black;
+    width:100%;
+height:100%;
+}
+.landing{
+    
+    background:black;
+    color:white;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+/* NAVBAR */
+
+.navbar{
+    display:flex;
+    justify-content:space-between;
+    
+    padding:20px 20px;
+}
+.nav-buttons{
+    display:flex;
+    align-items:flex-end;
+    
+
+}
+
+.logo{
+    font-weight:bold;
+    font-size:26px;
+    margin-left:1px;
+}
+
+.nav-buttons button{
+    margin-left:8px;
+    padding:8px 8px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.login-btn{
+    background:transparent;
+    background:#ff4d4d;
+    color:white;
+    border:1px solid white;
+}
+
+.register-btn{
+    background:#ff4d4d;
+    color:white;
+}
+
+
+/* HERO */
+
+.hero{
+    text-align:center;
+    margin-top:80px;
+}
+
+.hero h1{
+    font-size:32px;
+    margin-bottom:20px;
+}
+
+.hero p{
+    color:gray;
+    margin-bottom:30px;
+}
+
+.explore-btn{
+    background:#ff4d4d;
+    padding:14px 26px;
+    border:none;
+    border-radius:12px;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+
+/* PREVIEW */
+
+.preview{
+    margin-top:120px;
+    text-align:center;
+}
+
+.reel-preview{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    margin-top:30px;
+   
+}
+
+.preview-card{
+    width:180px;
+    height:320px;
+    background:linear-gradient(180deg,#333,#111);
+    border-radius:18px;
+}
+
+
+/* CATEGORIES */
+
+.categories{
+    text-align:center;
+    margin-top:120px;
+}
+
+.chips span{
+    display:inline-block;
+    margin:10px;
+    padding:10px 18px;
+    background:#222;
+    border-radius:20px;
+}
+
+
+/* PARTNER */
+
+.partner{
+    text-align:center;
+    margin:120px 10px;
+}
+
+.partner button{
+    margin-top:20px;
+    padding:12px 22px;
+    background:#ff4d4d;
+    border:none;
+    border-radius:10px;
+    color:white;
+    cursor:pointer;
+}
+.reel-preview{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    margin-top:30px;
+}
+
+.preview-video{
+    width:180px;
+    height:320px;
+    object-fit:cover;
+    border-radius:18px;
+}
+.preview-video:hover{
+    transform:scale(1.1);
+    transition:transform 0.3s ease;
+}
+.partner p{
+    margin-top:5px;
+}
