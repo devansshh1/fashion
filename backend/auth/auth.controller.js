@@ -3,7 +3,8 @@ const pass=require('bcryptjs');
 const jwt=require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const fp=require('../models/foodpartner.model');
-
+const { uploadImage } = require('../service/storage.service');
+const { v4: uuid } = require('uuid');
 async function registerUser(req,res){
     console.log("BODY:", req.body); // ⭐ ADD THIS
     const{name,email,password}=req.body;
@@ -18,11 +19,11 @@ async function registerUser(req,res){
             email,
             password:hashedPassword
         });
-        const token=jwt.sign({id:newuser._id},process.env.JWT_SECRET);
+        const token=jwt.sign({id:newuser._id},process.env.JWT_SECRET,{ expiresIn: "7d" });
 res.cookie("userToken", token,{
     httpOnly:true,
     secure:false,
-    sameSite:"lax"
+    sameSite:"lax",maxAge: 7 * 24 * 60 * 60 * 1000
 });
 
 
@@ -43,11 +44,11 @@ async  function loginUser(req,res){
     if(!isPasswordValid){
         return res.status(400).json({message:'Invalid credentials'});
     }
-    const token=jwt.sign({id:existingUser._id},process.env.JWT_SECRET);
+    const token=jwt.sign({id:existingUser._id},process.env.JWT_SECRET,{ expiresIn: "7d" });
    res.cookie("userToken", token,{
     httpOnly:true,
     secure:false,
-    sameSite:"lax"
+    sameSite:"lax",maxAge: 7 * 24 * 60 * 60 * 1000
 });
 
 
@@ -58,10 +59,13 @@ async function logoutUser(req,res){
     httpOnly: true,
     sameSite: "lax",   // ⭐ REQUIRED for cross-origin
     secure: false       // true ONLY if using HTTPS
+    ,maxAge: 7 * 24 * 60 * 60 * 1000
 });
     res.status(200).json({message:'Logout successful'});
 }
 async function registerFoodPartner(req,res){
+    console.log("REQ.BODY:", req.body); // ⭐ ADD THIS
+    console.log("REQ.FILE:", req.file); // ⭐ ADD THIS
     //food partner registration logic here
     const {
     name,
@@ -71,6 +75,11 @@ async function registerFoodPartner(req,res){
     totalMeals,
     customersServed
 } = req.body;
+
+ const uploadedImage = await uploadImage(
+            req.file.buffer,
+            uuid()
+        );
 
     const existingPartner=await fp.findOne({email});
     if(existingPartner){
@@ -83,13 +92,13 @@ async function registerFoodPartner(req,res){
         password:hashedPassword,
         address,
         totalMeals,
-        customersServed
+        customersServed, image: uploadedImage.url
     });
-    const token=jwt.sign({id:newPartner._id},process.env.JWT_SECRET);
+    const token=jwt.sign({id:newPartner._id},process.env.JWT_SECRET,{ expiresIn: "7d" });
   res.cookie("partnerToken", token, {
     httpOnly: true,
     secure: false,
-    sameSite: "lax"
+    sameSite: "lax",maxAge: 7 * 24 * 60 * 60 * 1000
 });
 
 
@@ -107,11 +116,11 @@ async function loginFoodPartner(req,res){
     if(!isPasswordValid){
         return res.status(400).json({message:'Invalid credentials'});
     }
-    const token=jwt.sign({id:existingPartner._id},process.env.JWT_SECRET);
+    const token=jwt.sign({id:existingPartner._id},process.env.JWT_SECRET,{ expiresIn: "7d" });
    res.cookie("partnerToken", token, {
     httpOnly: true,
     secure: false,
-    sameSite: "lax"
+    sameSite: "lax",maxAge: 7 * 24 * 60 * 60 * 1000
 });
 
 
@@ -123,7 +132,7 @@ async function logoutFoodPartner(req,res){
   res.clearCookie("partnerToken", {
     httpOnly: true,
     secure: false,
-    sameSite: "lax"
+    sameSite: "lax",maxAge: 7 * 24 * 60 * 60 * 1000
 });
 
 

@@ -8,6 +8,7 @@ import PartnerLogin from "../Pages/PartnerLogin";
 import PartnerRegister from "../Pages/PartnerRegister";
 import UserRegister from "../Pages/UserRegister";
 import FoodPartnerRealHomePage from "../Pages/FoodPartnerRealHomePage";
+import ReelFeed from "../components/ReelFeed";
 import Saved from "../General/saved";   
 function AppRouter() {
     return (
@@ -34,6 +35,7 @@ function AppRouter() {
                     element={<FoodPartnerRealHomePage />}
                 />
                 <Route path="/saved" element={<Saved />} />
+                <Route path="/reels" element={<ReelFeed />} />
 <Route 
    path="/partner/:id/profile" 
    element={<FoodProfile />} 

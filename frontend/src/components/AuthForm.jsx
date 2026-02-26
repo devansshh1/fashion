@@ -7,7 +7,7 @@ function AuthForm({title, fields, buttonText, onSubmit}) {
 
                 <h2 className="title">{title}</h2>
 
-                <form onSubmit={onSubmit}>
+                <form onSubmit={onSubmit} encType="multipart/form-data">
                     {fields.map((field, index)=>(
                         <input
                             key={index}

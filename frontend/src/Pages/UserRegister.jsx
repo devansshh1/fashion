@@ -21,8 +21,8 @@ const handleSubmit = async (e) => {
         password: data.password 
     }, { withCredentials: true })
     console.log("RESPONSE:", resp.data);
-     // ⭐ NAVIGATE TO HOME AFTER REGISTRATION
-     navigate('/login')
+                // ⭐ NAVIGATE TO HOME AFTER REGISTRATION
+     navigate('/reels')
 }
     const fields = [
         {name:"name", type:"text", placeholder:"Full Name"},

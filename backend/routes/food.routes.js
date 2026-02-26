@@ -21,4 +21,6 @@ routes.post('/:foodId/like', authFoodPartner.authUser, foodcontroller.likeFood);
 routes.post('/:foodId/save', authFoodPartner.authUser, foodcontroller.saveFood);
 routes.get('/:foodId/comments', foodcontroller.getComments);
 routes.delete('/comment/:commentId', authFoodPartner.authUser, foodcontroller.deleteComment);
+routes.get("/top-partners", foodcontroller.getTopPartners);
+routes.get("/top-reels", foodcontroller.getTopReels);
 module.exports=routes;

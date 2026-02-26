@@ -15,30 +15,30 @@ function PartnerRegister(){
         {name:"customersServed", type:"number", placeholder:"Customers Served"},
         {name:"totalMeals", type:"number", placeholder:"Total Meals Donated"},
         {name:"address", type:"text", placeholder:"Business Address"},
+        {name:"image", type:"file", placeholder:"Upload Image "}
     ];
     
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = {
-            name: formData.get('name'),
-            email: formData.get('email'),
-            password: formData.get('password'),
-            customersServed:formData.get('customersServed'),
-            totalMeals:formData.get('totalMeals'),
-             address:formData.get('address')
+   const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        };
-        const resp = await axios.post('http://localhost:3000/api/auth/partner/register', data, { withCredentials: true });
-        if (resp.status === 400||resp.status === 500) {
-           console.error("Registration failed:", resp.data);
-            return;
-             // Redirect to food partner home page on successful registration
-        }
+    const formData = new FormData(e.target);
+
+    try {
+        const resp = await axios.post(
+            'http://localhost:3000/api/auth/partner/register',
+            formData,
+            {
+                withCredentials: true
+                
+            }
+        );
+
         navigate('/partner/login');
-        console.log("RESPONSE:", resp.data);
-    };
 
+    } catch (err) {
+        console.error("Registration failed:", err.response?.data);
+    }
+};
     return (
         <AuthForm
             title="Food Partner Register"

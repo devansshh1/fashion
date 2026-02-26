@@ -20,6 +20,9 @@ const foodPartnerSchema=new mongoose.Schema({
     },customersServed:{
         type:Number,
         required:true
+     },image:{
+        type:String,
+        required:true
      }
 
     },{

@@ -7,6 +7,7 @@ const LikeModel=require('../models/like.model');
 const CommentModel = require('../models/comment.model');
 
 
+
 async function addFood(req,res){
     //add food logic here
     
@@ -301,9 +302,54 @@ async function getAllFoods(req,res){
     res.json({foods});
 }
 
+async function getTopPartners(req, res) {
+  try {
+    const topPartners = await FoodModel.aggregate([
+      {
+        $group: {
+          _id: "$foodPartnerId",
+          totalLikes: { $sum: "$likesCount" }  // ✅ correct field
+        }
+      },
+      { $sort: { totalLikes: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: "foodpartners",   // ✅ MUST be plural + lowercase
+          localField: "_id",
+          foreignField: "_id",
+          as: "partnerDetails"
+        }
+      },
+{
+  $unwind: "$partnerDetails"
+}
+      
+    ]);
+    console.log(topPartners);
+
+    res.json({ partners: topPartners });
+
+  } catch (err) {
+    console.error("TOP PARTNERS ERROR:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+// ⭐ Get Top 3 Most Liked Reels
+async function getTopReels(req, res) {
+  try {
+    const topReels = await FoodModel.find()
+      .sort({ likesCount: -1 })
+      .limit(3)
+      .populate("foodPartnerId", "name image");
+
+    res.json({ reels: topReels });
+
+  } catch (err) {
+    console.error("TOP REELS ERROR:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+}
 
 
-
-
-
-module.exports={addFood, getAllFoods, getFoodsByPartner, likeFood, saveFood, addComment, getComments, deleteComment, savedFoodItems,getAllFoods};
+module.exports={addFood, getAllFoods, getFoodsByPartner, likeFood, saveFood, addComment, getComments, deleteComment, savedFoodItems,getAllFoods, getTopPartners, getTopReels    };
