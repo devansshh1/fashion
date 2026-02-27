@@ -77,10 +77,9 @@ async function registerFoodPartner(req,res){
 } = req.body;
 
  const uploadedImage = await uploadImage(
-            req.file.buffer,
-            uuid()
-        );
-
+  req.file.buffer,
+  req.file.originalname
+);
     const existingPartner=await fp.findOne({email});
     if(existingPartner){
         return res.status(400).json({message:'Food Partner already exists'});

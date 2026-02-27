@@ -1,4 +1,5 @@
 const mongoose=require('mongoose');
+const { schema } = require('./post.model');
 const foodSchema=new mongoose.Schema({
     name:{
         type:String,

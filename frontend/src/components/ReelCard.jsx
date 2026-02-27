@@ -7,18 +7,21 @@ import { useNavigate } from "react-router-dom";
 
 
 async function likeFood(foodId) {
-    try{
-        const resp = await axios.post(
-            `http://localhost:3000/api/food/${foodId}/like`,
-            {},
-            { withCredentials: true }
-        );
-        console.log("Liked food:", resp.data);
-    }
-    catch(err){
-        console.error("Error liking food:", err);
-    }
+  try {
+    const resp = await axios.post(
+      `http://localhost:3000/api/food/${foodId}`,   // better route
+      { contentType: "food" },                      // IMPORTANT
+      { withCredentials: true }
+    );
+
+    return resp.data;
+  } catch (err) {
+    console.error("Error liking food:", err);
+    throw err;
+  }
 }
+
+
 async function saveFood(foodId) {
     try{
         const resp = await axios.post(
@@ -48,9 +51,12 @@ async function commentOnFood(foodId, comment) {
 
 function ReelCard({ videoData }) {
 const navigate = useNavigate();
-
+const [showComments, setShowComments] = useState(false);
+const [commentList, setCommentList] = useState([]);
+const [newComment, setNewComment] = useState("");
 const [likes, setLikes] = useState(videoData.likesCount);
 const [saves, setSaves] = useState(videoData.savesCount);
+const [saved, setSaved] = useState(false);
 const [comments, setComments] = useState(videoData.commentsCount);
   const [liked, setLiked] = useState(false);  
     const videoRef = useRef(null);
@@ -99,7 +105,7 @@ const [comments, setComments] = useState(videoData.commentsCount);
             {/* VIDEO */}
             <video
                 ref={videoRef}
-                src={videoData.video}
+                src={`http://localhost:3000${videoData.video}`}
                 loop
                 muted
                 playsInline
@@ -110,63 +116,120 @@ const [comments, setComments] = useState(videoData.commentsCount);
             <div className="action-bar">
 
                 <div className="action">
-                    <FaHeart size={28} onClick={async () => { if(liked){
-    setLiked(prev => prev - 1);
-}else{
-    setLiked(prev => prev + 1);
-}
+                   
+<FaHeart
+  size={28}
+  color={liked ? "red" : "white"}
+  onClick={async () => {
 
-setLiked(!liked);
-setLikes(prev => prev + (liked ? -1 : 1)); // Optimistically update UI
+    const newLikedState = !liked;
+    setLiked(newLikedState);
+    setLikes(prev => prev + (newLikedState ? 1 : -1));
 
-
-    try{
-        await likeFood(videoData._id);
+    try {
+      const resp = await likeFood(videoData._id);
+      // optional: sync from backend if returning liked state
+    } catch {
+      // rollback if failed
+      setLiked(!newLikedState);
+      setLikes(prev => prev + (newLikedState ? -1 : 1));
     }
-    catch{
-        setLikes(prev => prev - 1); // rollback if failed
-    }
 
-}}
- />
+  }}
+/>
+
                     <span>{likes}</span>
                 </div>
 
                 <div className="action">
-                    <FaBookmark size={26} onClick={async () => {
+                   
+                   <FaBookmark
+  size={26}
+  color={saved ? "gold" : "white"}
+  onClick={async () => {
+    try {
+      const resp = await axios.post(
+        `http://localhost:3000/api/food/${videoData._id}/save`,
+        {},
+        { withCredentials: true }
+      );
 
-    setSaves(prev => prev + 1);
+      setSaved(resp.data.saved);
+      setSaves(resp.data.savesCount);
 
-    try{
-        await saveFood(videoData._id);
+    } catch (err) {
+      console.error("Save error:", err);
     }
-    catch{
-        setSaves(prev => prev - 1);
-    }
-
-}}
- />
+  }}
+/>
                     <span>{saves}</span>
                 </div>
 
                 <div className="action">
-                    <FaRegCommentDots size={26} onClick={async () => {
+                   <FaRegCommentDots
+  size={26}
+  onClick={async () => {
+    setShowComments(true);
 
-    setComments(prev => prev + 1);
+    const resp = await axios.get(
+      `http://localhost:3000/api/food/${videoData._id}/comments`
+    );
 
-    try{
-        await commentOnFood(videoData._id, "Nice food!");
-    }
-    catch{
-        setComments(prev => prev - 1);
-    }
+    setCommentList(resp.data);
+  }}
+/>
 
-}}
- />
                         <span>{comments}</span>
                 </div>
 
             </div>
+
+            {showComments && (
+  <div className="comment-modal">
+    <div className="comment-box">
+
+      <h3>Comments</h3>
+
+      {commentList.map(c => (
+        <div key={c._id}>
+          <strong>{c.user.name}</strong>: {c.text}
+        </div>
+      ))}
+
+      <input
+        value={newComment}
+        onChange={(e) => setNewComment(e.target.value)}
+        placeholder="Write comment..."
+      />
+
+      <button
+        onClick={async () => {
+          await axios.post(
+            `http://localhost:3000/api/food/${videoData._id}/comment`,
+            { text: newComment },
+            { withCredentials: true }
+          );
+
+          setNewComment("");
+
+          const resp = await axios.get(
+            `http://localhost:3000/api/food/${videoData._id}/comments`
+          );
+
+          setCommentList(resp.data);
+          setComments(resp.data.length);
+        }}
+      >
+        Post
+      </button>
+
+      <button onClick={() => setShowComments(false)}>
+        Close
+      </button>
+
+    </div>
+  </div>
+)}
 
             {/* BOTTOM OVERLAY */}
             {/* TOP OVERLAY */}

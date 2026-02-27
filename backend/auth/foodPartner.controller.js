@@ -1,15 +1,3 @@
-/*const foodPartnerModel=require('../models/foodpartner.model');
-
-async function getFoodPartnerProfile(req,res){
-    const foodPartnerId=req.params.id;
-    const foodPartner=await foodPartnerModel.findById(foodPartnerId).select('-password');
-    if(!foodPartner){
-        return res.status(404).json({message: 'Food Partner not found'});
-    }
-    res.status(200).json(foodPartner);
-}
-module.exports={getFoodPartnerProfile};
-*/
 
 const Food = require('../models/food.model');
 const FoodPartner = require('../models/foodpartner.model');

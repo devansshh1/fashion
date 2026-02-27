@@ -283,5 +283,31 @@ padding-bottom: 50px;
   background: #ff4d4d;
   border-radius: 10px;
 }   
+.upload-container {
+  padding: 40px;
+  color: white;
+}
 
+.upload-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 400px;
+}
+
+.posts-container {
+  padding: 40px;
+  color: white;
+}
+
+.posts-grid {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.post-card img {
+  width: 200px;
+  border-radius: 15px;
+}
 

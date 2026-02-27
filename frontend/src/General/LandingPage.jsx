@@ -8,6 +8,19 @@ import { useRef } from "react";
 import ReelFeed from "../components/ReelFeed";
 function LandingPage() {
 const { user, loading } = useContext(AuthContext);
+
+const handleCategoryClick = (category) => {
+  const choice = window.confirm(
+    `Do you want to VIEW posts in "${category}"?\n\nClick Cancel to UPLOAD your post.`
+  );
+
+  if (choice) {
+    navigate(`/category/${category}`);
+  } else {
+    navigate(`/upload-post/${category}`);
+  }
+};
+
 const videoRefs = useRef([]);
     const navigate = useNavigate();
     const [topPartners, setTopPartners] = useState([]);
@@ -50,6 +63,7 @@ useEffect(() => {
       threshold: 0.6
     }
   );
+
 
   videoRefs.current.forEach((video) => {
     if (video) observer.observe(video);
@@ -159,7 +173,7 @@ useEffect(() => {
 
         <video
   ref={(el) => (videoRefs.current[index] = el)}
-  src={reel.video}
+  src={`http://localhost:3000${reel.video}`}
   className="top-reel-video"
   muted
   loop
@@ -180,14 +194,17 @@ useEffect(() => {
 
                 <h2>Browse By Taste</h2>
 
-                <div className="chips">
-                    <span> Old Money</span>
-                    <span>Street Wear</span>
-                    <span>Traditional</span>
-                    <span>Aesthetic</span>
-                    <span>Minimal</span>
-                    <span>Maximal</span>
-                </div>
+               <div className="chips">
+  {["Old Money", "Street Wear", "Traditional", "Aesthetic", "Minimal", "Maximal"].map((cat) => (
+    <span
+      key={cat}
+      onClick={() => handleCategoryClick(cat)}
+      style={{ cursor: "pointer" }}
+    >
+      {cat}
+    </span>
+  ))}
+</div>
 
             </div>
 

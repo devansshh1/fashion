@@ -10,6 +10,8 @@ import UserRegister from "../Pages/UserRegister";
 import FoodPartnerRealHomePage from "../Pages/FoodPartnerRealHomePage";
 import ReelFeed from "../components/ReelFeed";
 import Saved from "../General/saved";   
+import UploadPost from "../Pages/UploadPost";
+import CategoryPosts from "../Pages/CategoryPosts";
 function AppRouter() {
     return (
         <Router>
@@ -40,6 +42,9 @@ function AppRouter() {
    path="/partner/:id/profile" 
    element={<FoodProfile />} 
 />
+
+<Route path="/upload-post/:category" element={<UploadPost />} />
+<Route path="/category/:category" element={<CategoryPosts />} />
 
 
             </Routes>

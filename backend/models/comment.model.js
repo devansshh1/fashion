@@ -2,26 +2,32 @@ const mongoose = require('mongoose');
 
 const commentSchema = new mongoose.Schema({
 
-    user:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'User',
-        required:true
-    },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
 
-    food:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'Food',
-        required:true
-    },
+  contentType: {
+    type: String,
+    enum: ["food", "post"],
+    required: true
+  },
 
-    text:{
-        type:String,
-        required:true
-    }
+  contentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true
+  },
+
+  text: {                    // 🔥 ADD THIS
+    type: String,
+    required: true
+  }
 
 },{
-    timestamps:true
+  timestamps:true
 });
-commentSchema.index({food:1}); // fast comment fetching
+
+commentSchema.index({contentId:1});
 
 module.exports = mongoose.model('Comment', commentSchema);
