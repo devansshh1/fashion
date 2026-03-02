@@ -38,8 +38,15 @@ const postSchema = new mongoose.Schema(
     commentsCount: {
       type: Number,
       default: 0
+    },  // 🔥 NEW FIELD
+    score: {
+      type: Number,
+      default: 0
     }
   },
   { timestamps: true }
 );
+postSchema.index({ score: -1 });
+postSchema.index({ category: 1 });
+
 module.exports = mongoose.model("Post", postSchema);

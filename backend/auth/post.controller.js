@@ -1,9 +1,10 @@
 const Post = require("../models/post.model");
-const { uploadImage } = require("../service/storage.service");
-const { v4: uuid } = require("uuid");
 const Like = require("../models/like.model");
 const Save = require("../models/save.model");
 const Comment = require("../models/comment.model");
+
+
+// ================= UPLOAD =================
 async function uploadPost(req, res) {
   try {
     const { name, category } = req.body;
@@ -12,49 +13,69 @@ async function uploadPost(req, res) {
       return res.status(400).json({ message: "Image required" });
     }
 
-    const uploaded = await uploadImage(req.file.buffer,  req.file.originalname);
-console.log("UPLOAD RESPONSE:", uploaded);
     const post = await Post.create({
       name,
       category,
-      image: uploaded.url,
+      image: `/uploads/${req.file.filename}`,
       userId: req.user._id
     });
 
     res.status(201).json({ message: "Post uploaded", post });
 
   } catch (err) {
-    console.error("UPLOAD POST ERROR:", err);
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 }
-async function getTopPosts(req, res) {
-  try {
-    const { category } = req.params;
 
-    const posts = await Post.find({ category })
-      .sort({ likesCount: -1 })
-      .limit(5)
-      .populate("userId", "name");
+
+// ================= GET ALL POSTS =================
+async function getAllPosts(req, res) {
+  try {
+    const { category } = req.query;
+
+    const filter = category ? { category } : {};
+
+    const posts = await Post.find(filter)
+      .populate("userId", "name")
+      .sort({ createdAt: -1 });
 
     res.json({ posts });
 
   } catch (err) {
-    console.error("GET POSTS ERROR:", err);
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 }
+
+
+// ================= TOP TRENDING =================
+// score = 1*likes + 2*comments + 3*saves
+async function getTopTrending(req, res) {
+  try {
+    const { category } = req.query;
+
+    const filter = category ? { category } : {};
+
+    const posts = await Post.find(filter)
+      .populate("userId", "name")
+      .sort({ score: -1 })
+      .limit(5);
+
+    res.json({ posts });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+
+// ================= LIKE =================
 async function togglePostLike(req, res) {
   try {
     const { postId } = req.params;
     const userId = req.user._id;
-    console.log("USER:", req.user);
-console.log("POST ID:", req.params.postId);
-
-    const post = await Post.findById(postId);
-    if (!post) {
-      return res.status(404).json({ message: "Post not found" });
-    }
 
     const existingLike = await Like.findOne({
       user: userId,
@@ -62,45 +83,43 @@ console.log("POST ID:", req.params.postId);
       contentType: "post"
     });
 
-    // 🔴 UNLIKE
+    const post = await Post.findById(postId);
+
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
     if (existingLike) {
       await Like.deleteOne({ _id: existingLike._id });
-
-      const updated = await Post.findByIdAndUpdate(
-        postId,
-        { $inc: { likesCount: -1 } },
-        { new: true }
-      );
-
-      return res.json({
-        liked: false,
-        likesCount: updated.likesCount
+      post.likesCount -= 1;
+    } else {
+      await Like.create({
+        user: userId,
+        contentId: postId,
+        contentType: "post"
       });
+      post.likesCount += 1;
     }
 
-    // 🟢 LIKE
-    await Like.create({
-      user: userId,
-      contentId: postId,
-      contentType: "post"
-    });
+    // 🔥 Update score
+    post.score =
+      post.likesCount * 1 +
+      post.commentsCount * 2 +
+      post.savesCount * 3;
 
-    const updated = await Post.findByIdAndUpdate(
-      postId,
-      { $inc: { likesCount: 1 } },
-      { new: true }
-    );
+    await post.save();
 
     res.json({
-      liked: true,
-      likesCount: updated.likesCount
+      likesCount: post.likesCount,
+      score: post.score
     });
 
   } catch (err) {
-    console.error("POST LIKE ERROR:", err);
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 }
+
+
+// ================= SAVE =================
 async function togglePostSave(req, res) {
   try {
     const { postId } = req.params;
@@ -112,74 +131,75 @@ async function togglePostSave(req, res) {
       contentType: "post"
     });
 
-    // 🔴 UNSAVE
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
     if (existingSave) {
       await Save.deleteOne({ _id: existingSave._id });
-
-      const updated = await Post.findByIdAndUpdate(
-        postId,
-        { $inc: { savesCount: -1 } },
-        { new: true }
-      );
-
-      return res.json({
-        saved: false,
-        savesCount: updated.savesCount
+      post.savesCount -= 1;
+    } else {
+      await Save.create({
+        user: userId,
+        contentId: postId,
+        contentType: "post"
       });
+      post.savesCount += 1;
     }
 
-    // 🟢 SAVE
-    await Save.create({
-      user: userId,
-      contentId: postId,
-      contentType: "post"
-    });
+    post.score =
+      post.likesCount * 1 +
+      post.commentsCount * 2 +
+      post.savesCount * 3;
 
-    const updated = await Post.findByIdAndUpdate(
-      postId,
-      { $inc: { savesCount: 1 } },
-      { new: true }
-    );
+    await post.save();
 
     res.json({
-      saved: true,
-      savesCount: updated.savesCount
+      savesCount: post.savesCount,
+      score: post.score
     });
 
   } catch (err) {
-    console.error("SAVE ERROR:", err);
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 }
+
+
+// ================= COMMENT =================
 async function addPostComment(req, res) {
   try {
     const { postId } = req.params;
-    const userId = req.user._id;
     const { text } = req.body;
 
-    if (!text) {
-      return res.status(400).json({ message: "Comment required" });
-    }
+    if (!text) return res.status(400).json({ message: "Comment required" });
 
-    const comment = await Comment.create({
-      user: userId,
+    await Comment.create({
+      user: req.user._id,
       contentId: postId,
       contentType: "post",
       text
     });
 
-    await Post.findByIdAndUpdate(
-      postId,
-      { $inc: { commentsCount: 1 } }
-    );
+    const post = await Post.findById(postId);
+    post.commentsCount += 1;
 
-    res.status(201).json({ comment });
+    post.score =
+      post.likesCount * 1 +
+      post.commentsCount * 2 +
+      post.savesCount * 3;
+
+    await post.save();
+
+    res.status(201).json({ message: "Comment added" });
 
   } catch (err) {
-    console.error("COMMENT ERROR:", err);
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 }
+
+
+// ================= GET COMMENTS =================
 async function getPostComments(req, res) {
   try {
     const { postId } = req.params;
@@ -188,22 +208,47 @@ async function getPostComments(req, res) {
       contentId: postId,
       contentType: "post"
     })
-    .populate("user", "name")
-    .sort({ createdAt: -1 });
+      .populate("user", "name")
+      .sort({ createdAt: -1 });
 
     res.json({ comments });
 
   } catch (err) {
-    console.error("GET COMMENT ERROR:", err);
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+async function getSavedPosts(req, res) {
+  try {
+    const userId = req.user._id;
+
+    const saves = await Save.find({
+      user: userId,
+      contentType: "post"
+    });
+
+    const postIds = saves.map((s) => s.contentId).filter(Boolean);
+
+    const posts = await Post.find({ _id: { $in: postIds } })
+      .populate("userId", "name")
+      .sort({ createdAt: -1 });
+
+    res.json({ posts });
+
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 }
 
- module.exports = {
-    uploadPost,
-    getTopPosts,
-    togglePostLike,
-    togglePostSave,
-    addPostComment,
-    getPostComments
+
+module.exports = {
+  uploadPost,
+  getAllPosts,
+  getTopTrending,
+  togglePostLike,
+  togglePostSave,
+  addPostComment,
+  getPostComments,
+  getSavedPosts
 };

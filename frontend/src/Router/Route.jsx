@@ -11,7 +11,10 @@ import FoodPartnerRealHomePage from "../Pages/FoodPartnerRealHomePage";
 import ReelFeed from "../components/ReelFeed";
 import Saved from "../General/saved";   
 import UploadPost from "../Pages/UploadPost";
-import CategoryPosts from "../Pages/CategoryPosts";
+import CategoryPage from "../Pages/CategoryPage";
+import ViewPosts from "../Pages/ViewPosts";
+import TopTrending from "../Pages/TopTrending";
+import SavedPosts from "../Pages/SavedPosts";
 function AppRouter() {
     return (
         <Router>
@@ -42,11 +45,11 @@ function AppRouter() {
    path="/partner/:id/profile" 
    element={<FoodProfile />} 
 />
-
-<Route path="/upload-post/:category" element={<UploadPost />} />
-<Route path="/category/:category" element={<CategoryPosts />} />
-
-
+<Route path="/category/:category" element={<CategoryPage />} />
+  <Route path="/category/:category/top" element={<TopTrending />} />
+          <Route path="/category/:category/view" element={<ViewPosts />} />
+          <Route path="/category/:category/upload" element={<UploadPost />} />
+<Route  path="/category/:category/saved" element={<SavedPosts />} />
             </Routes>
         </Router>
     );
