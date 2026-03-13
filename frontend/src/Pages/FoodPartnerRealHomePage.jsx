@@ -4,6 +4,52 @@ import axios from "axios";
 import Home from "../General/LandingPage";
 
 
+const styles = {
+page: {
+  minHeight: "100vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  background: "linear-gradient(135deg,#0f172a,#020617)"
+}
+, card: {
+  width: "420px",
+  padding: "32px",
+  borderRadius: "20px",
+  background: "rgba(30,30,35,0.85)",
+  backdropFilter: "blur(20px)",
+  boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
+  display: "flex",
+  flexDirection: "column",
+  gap: "18px",
+  color: "white"
+},input: {
+  padding: "12px",
+  borderRadius: "12px",
+  border: "1px solid rgba(255,255,255,0.15)",
+  background: "rgba(255,255,255,0.05)",
+  color: "white"
+},textarea: {
+  padding: "12px",
+  borderRadius: "12px",
+  border: "1px solid rgba(255,255,255,0.15)",
+  minHeight: "90px",
+  background: "rgba(255,255,255,0.05)",
+  color: "white",
+  resize: "none"
+},button: {
+  padding: "14px",
+  borderRadius: "14px",
+  border: "none",
+  background: "linear-gradient(135deg,#8d60a8,#5b3b8c)",
+  color: "white",
+  fontWeight: "600",
+  cursor: "pointer",
+  fontSize: "16px"
+}
+};
+
+
 function FoodPartnerRealHomePage() {
 
     const [videoFile, setVideoFile] = useState(null);
@@ -20,34 +66,40 @@ function FoodPartnerRealHomePage() {
         }
     };
 
-    const handleUpload = () => {
+    
+const onsubmit = async (e) => {
+    e.preventDefault();
 
-        if (!videoFile || !title || !description) {
-            alert("Please fill everything!");
-            return;
-        }
-
-        // Later you will send this via FormData to backend
-        console.log({
-            videoFile,
-            title,
-            description
-        });
-        
-        navigate('/');
-       
-    };
-    const onsubmit = async (e) => {
-        e.preventDefault();
-        // Handle form submission logic here
-        const formData=new FormData();
-        formData.append('video',videoFile);
-        formData.append('name',title);
-        formData.append('description',description);
-        const res=await axios.post('http://localhost:3000/api/food/add',formData,{
-            withCredentials:true,
-        })
+    if (!videoFile || !title || !description) {
+        alert("Please fill everything!");
+        return;
     }
+
+    const formData = new FormData();
+    formData.append("video", videoFile);        // MUST match backend upload.single("video")
+    formData.append("name", title);
+    formData.append("description", description);
+
+    try {
+        await axios.post(
+            "http://localhost:3000/api/food/add",
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                },
+                withCredentials: true
+            }
+        );
+
+        alert("Video uploaded successfully 🚀");
+        navigate("/");
+
+    } catch (err) {
+        console.error(err);
+        alert("Upload failed ❌");
+    }
+};
 
     const navigate = useNavigate();
 
@@ -56,7 +108,7 @@ function FoodPartnerRealHomePage() {
 
             <div style={styles.card}>
 
-                <h1 style={styles.heading}>Upload Food Reel 🎥</h1>
+                <h1 style={styles.heading}>Upload  Reel 🎥</h1>
 
                 {/* Video Preview */}
                 {previewURL && (
@@ -85,92 +137,21 @@ function FoodPartnerRealHomePage() {
                 />
 
                 {/* Description */}
-                <textarea
-                    placeholder="Enter description"
-                    value={description}
-                    onChange={(e)=>setDescription(e.target.value)}
-                    style={styles.textarea}
-                />
-
+                
                 <button
-                    onClick={(e) => { handleUpload(); onsubmit(e); }}
-                    
-                    style={styles.button}
-                >
-                    Upload Video
-                </button>
-            
+    onClick={onsubmit}
+    style={styles.button}
+>
+    Upload Video
+</button>
+
+
+              
             </div>
         </div>
     );
 }
 
 export default FoodPartnerRealHomePage;
-
-
-
 /* ---------------- STYLES ---------------- */
 
-const styles = {
-
-    page: {
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "#f4f6fb"
-    },
-
-    card: {
-        width: "420px",
-        padding: "30px",
-        borderRadius: "18px",
-        background: "white",
-        boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-        display: "flex",
-        flexDirection: "column",
-        gap: "16px"
-    },
-
-    heading: {
-        textAlign: "center",
-        marginBottom: "10px"
-    },
-
-    video: {
-        width: "100%",
-        maxHeight: "240px",
-        borderRadius: "12px",
-        objectFit: "cover"
-    },
-
-    fileInput: {
-        padding: "8px"
-    },
-
-    input: {
-        padding: "12px",
-        borderRadius: "10px",
-        border: "1px solid #ddd",
-        fontSize: "14px"
-    },
-
-    textarea: {
-        padding: "12px",
-        borderRadius: "10px",
-        border: "1px solid #ddd",
-        minHeight: "90px",
-        resize: "none"
-    },
-
-    button: {
-        padding: "14px",
-        borderRadius: "12px",
-        border: "none",
-        background: "#4f46e5",
-        color: "white",
-        fontWeight: "600",
-        cursor: "pointer",
-        fontSize: "15px"
-    }
-};

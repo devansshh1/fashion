@@ -37,7 +37,7 @@ function PartnerLogin(){
 
     return (
         <AuthForm
-            title="Food Partner Login"
+            title="Model Login"
             fields={fields}
             buttonText="Login"
             onSubmit={handleSubmit}

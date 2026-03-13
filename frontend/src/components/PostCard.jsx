@@ -73,29 +73,51 @@ function PostCard({ post, refresh }) {
       </div>
 
       {/* COMMENTS MODAL */}
-      {showComments && (
-        <div className="comment-modal">
-          <div className="comment-box">
-            <h3>Comments</h3>
+     {/* COMMENTS MODAL */}
+{showComments && (
+  <div className="comment-modal">
+    <div className="comment-box">
 
-            {comments.map((c) => (
-              <div key={c._id} className="comment-item">
-                <strong>{c.user.name}</strong>: {c.text}
-              </div>
-            ))}
+      <h3>Comments</h3>
 
-            <input
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Write a comment..."
-            />
-
-            <button onClick={postComment}>Post</button>
-            <button onClick={() => setShowComments(false)}>Close</button>
+      {/* COMMENT LIST */}
+      <div className="comment-list">
+        {comments.map((c) => (
+          <div key={c._id} className="comment-item">
+            <strong>{c.user.name}</strong> {c.text}
           </div>
-        </div>
-      )}
-    </>
+        ))}
+      </div>
+
+      {/* INPUT ROW */}
+      <div className="comment-input-row">
+        <input
+          className="comment-input"
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          placeholder="Write a comment..."
+        />
+
+        <button
+          className="comment-post-btn"
+          onClick={postComment}
+        >
+          Post
+        </button>
+      </div>
+
+      {/* CLOSE */}
+      <button
+        className="comment-close-btn"
+        onClick={() => setShowComments(false)}
+      >
+        Close
+      </button>
+
+    </div>
+  </div>
+)}
+     </>
   );
 }
 

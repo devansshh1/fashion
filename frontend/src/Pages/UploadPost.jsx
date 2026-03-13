@@ -63,10 +63,10 @@ function UploadPost() {
 
       <div className="upload-wrapper">
 
-        <div className="upload-card">
+        <div className="upload-card text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500 ">
 
-          <h1>Upload Your Outfit</h1>
-          <p>Share your style with the world</p>
+          <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500 ">Upload Your Outfit</h1>
+          <p className="font-bold">Share your style with the world</p>
 
           <form onSubmit={handleSubmit} className="upload-form">
 
@@ -74,10 +74,10 @@ function UploadPost() {
               
               <input
                 type="text"
-                placeholder="Enter outfit name"
+                placeholder="Choose Your Caption"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                required
+          
               />
             </div>
 
@@ -99,7 +99,7 @@ function UploadPost() {
             </div>
 
            <div className="file-upload-row">
-  <label htmlFor="fileInput" className="choose-btn">
+  <label htmlFor="fileInput" className="choose-btn text-white">
     Choose File
   </label>
 

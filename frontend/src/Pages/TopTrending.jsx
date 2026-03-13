@@ -22,15 +22,17 @@ function TopTrending() {
     <div className="premium-header">
 
   <div className="header-text">
-    <span className="flame">🔥</span>
-    <h1>Overall Trending</h1>
-    <p>Discover the most admired looks right now</p>
+    
+   
+    <p className=" text-transparent  bg-clip-text">
+      Discover the most admired looks
+    </p>
   </div>
 
-  <div className="header-filter">
-    <label>Category</label>
+  <div className="header-filter ">
+    <label className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">Category</label>
     <select
-      className="premium-select"
+      className="premium-select bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text"
       value={category}
       onChange={(e) => setCategory(e.target.value)}
     >

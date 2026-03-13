@@ -8,21 +8,14 @@ const router=express.Router();
 
 const multer = require('multer');
 const path = require('path');
+const { uploadVideo } = require('../service/storage.service');
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    const uniqueName =
-      Date.now() + '-' + Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname);
 
-    cb(null, uniqueName);
-  }
+const upload = multer({
+  storage: multer.memoryStorage(),
 });
 
-const upload = multer({ storage });
+
 router.get('/user/me', authUser, (req, res) => {
     res.status(200).json({
         _id: req.user._id,
@@ -40,4 +33,5 @@ router.post(
 );
 router.post('/partner/login',registerUser.loginFoodPartner);
 router.post('/partner/logout',registerUser.logoutFoodPartner);
+
 module.exports=router;

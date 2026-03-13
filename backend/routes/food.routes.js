@@ -2,6 +2,7 @@ const express=require('express');
 const routes=express.Router();
 const foodcontroller=require('../auth/food.controller');
 const  authFoodPartner =require('../middlewares/auth.middleware');
+const { uploadVideo } = require('../service/storage.service');
 //it is because we have middleware we after validation create a new property
 //  in auth of food with "req.foodPartner=foodPartner" now this foodPartner
 //  has every detail of the logged in food partner and with next we pass these details to
@@ -11,20 +12,11 @@ const multer=require('multer');
 
 const path = require('path');
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    const uniqueName =
-      Date.now() + '-' + Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname);
 
-    cb(null, uniqueName);
-  }
+
+const upload = multer({
+  storage: multer.memoryStorage(),
 });
-
-const upload = multer({ storage });
 
 routes.post('/add',authFoodPartner.authFoodPartner,upload.single('video'),foodcontroller.addFood); 
 routes.get('/',  foodcontroller.getAllFoods);

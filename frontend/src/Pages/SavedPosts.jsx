@@ -21,12 +21,18 @@ function SavedPosts() {
 
   return (
     <div className="premium-page">
-      <h1>💾 Saved Posts</h1>
+      <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500 text-3xl">
+        Saved Posts
+      </h1>
 
       <div className="premium-grid">
-        {posts.map((p) => (
-          <PostCard key={p._id} post={p} refresh={fetchSaved} />
-        ))}
+          {posts.length === 0 ? (
+            <p className="text-2xl font-bold">You haven't saved any posts yet. Start exploring and save your favorite looks!</p>
+          ) : (
+            posts.map((p) => (
+              <PostCard key={p._id} post={p} refresh={fetchSaved} />
+            ))
+          )}
       </div>
     </div>
   );

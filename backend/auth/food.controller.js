@@ -5,7 +5,7 @@ const { v4: uuid } = require('uuid');
 const SaveModel=require('../models/save.model');
 const LikeModel=require('../models/like.model');
 const CommentModel = require('../models/comment.model');
-
+const { uploadVideo } = require("../service/storage.service");
 
 async function addFood(req, res) {
   try {
@@ -14,10 +14,16 @@ async function addFood(req, res) {
       return res.status(400).json({ message: "Video file required" });
     }
 
+    // 🔥 Upload to ImageKit instead of local storage
+    const uploaded = await uploadVideo(
+      req.file.buffer,
+      req.file.originalname
+    );
+
     const item = await FoodModel.create({
       name: req.body.name,
       description: req.body.description,
-      video: `/uploads/${req.file.filename}`, // LOCAL PATH
+      video: uploaded.url, // ✅ IMAGEKIT URL
       foodPartnerId: req.foodPartner._id,
       likesCount: 0,
       savesCount: 0,
@@ -25,16 +31,15 @@ async function addFood(req, res) {
     });
 
     res.status(201).json({
-      message: 'Food item added successfully',
+      message: "Food item added successfully",
       item
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("ADD FOOD ERROR:", err);
     res.status(500).json({ message: "Server error" });
   }
 }
-
 
 async function getAllFoods(req,res){
     const foods=await FoodModel.find().populate('foodPartnerId','name');

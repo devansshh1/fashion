@@ -1,4 +1,3 @@
-
 const Food = require('../models/food.model');
 const FoodPartner = require('../models/foodpartner.model');
 
@@ -17,20 +16,33 @@ async function getPartnerProfile(req,res){
                 message:"Partner not found"
             });
         }
-        
-console.log("Requested Partner:", partnerId);
-        // FETCH VIDEOS
+
+        console.log("Requested Partner:", partnerId);
+
+        // FETCH ALL POSTS
         const videos = await Food
             .find({ foodPartnerId: partnerId })
-            .sort({ createdAt: -1 })
-            .limit(12);
+            .sort({ createdAt: -1 });
+
+        // TOTAL POSTS
+        const totalPosts = videos.length;
+
+        // TOTAL LIKES
+        const totalLikes = videos.reduce((sum, video) => {
+            return sum + (video.likesCount || 0);
+        }, 0);
 
         res.json({
-            partner,
+            partner: {
+                ...partner._doc,
+                totalPosts,
+                totalLikes
+            },
             videos
         });
 
         console.log("Videos Found:", videos.length);
+
     }catch(err){
         console.error(err);
         res.status(500).json({

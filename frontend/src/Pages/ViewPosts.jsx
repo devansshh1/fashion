@@ -23,15 +23,15 @@ function ViewPosts() {
       <div className="premium-header">
 
         <div className="header-text">
-          <span className="flame">📂</span>
-          <h1>All Posts</h1>
+          
+          <h1 className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">All Posts</h1>
           <p>Explore looks from every category</p>
         </div>
 
         <div className="header-filter">
-          <label>Choose Category</label>
+          <label className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">Choose Category</label>
           <select
-            className="premium-select"
+            className="premium-select bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >

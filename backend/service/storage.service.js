@@ -46,3 +46,16 @@ exports.uploadImage = async (buffer, originalName) => {
     fileName: `${Date.now()}.${extension}`
   });
 };
+
+exports.uploadVideo = async (buffer, originalName) => {
+  const extension = originalName.split(".").pop();
+
+  return await imagekit.upload({
+    file: buffer,
+    fileName: `${Date.now()}.${extension}`,
+    folder: "/videos", // Optional: to organize files in ImageKit
+    useUniqueFileName: true,
+    tags: ["model-video", "reels"],
+    isPrivateFile: false,
+  });
+};

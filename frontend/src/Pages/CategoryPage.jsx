@@ -1,25 +1,41 @@
 import { NavLink, Outlet } from "react-router-dom";
-
+import { HeroHighlight, Highlight } from "@/components/ui/HeroHighlight";
+import { BackgroundGradient } from "@/components/ui/background-gradient";
 function CategoryPage() {
   return (
+    <HeroHighlight>
     <div className="category-wrapper">
 
       <div className="category-nav">
-        <NavLink to="top" className="nav-item">
+        <BackgroundGradient>
+           <NavLink to="top" id="top-nav" className=" nav-item" >
           Top 5
         </NavLink>
 
-        <NavLink to="view" className="nav-item">
+        </BackgroundGradient>
+       
+
+       <BackgroundGradient>
+         <NavLink to="view" className="nav-item">
           View
         </NavLink>
 
-        <NavLink to="saved" className="nav-item">
+       </BackgroundGradient>
+       
+<BackgroundGradient>
+          <NavLink to="saved" className="nav-item">
           Saved
         </NavLink>
 
-        <NavLink to="upload" className="nav-item plus-btn">
+</BackgroundGradient>
+
+
+<BackgroundGradient>
+   <NavLink to="upload" className="nav-item plus-btn">
           +
         </NavLink>
+</BackgroundGradient>
+       
       </div>
 
       <div className="category-content">
@@ -27,6 +43,7 @@ function CategoryPage() {
       </div>
 
     </div>
+    </HeroHighlight>
   );
 }
 

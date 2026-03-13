@@ -97,15 +97,16 @@ const [comments, setComments] = useState(videoData.commentsCount);
     navigate(`/partner/${partnerId}/profile`);
 };
 
-
+ const videoSrc = videoData.video?.startsWith("http")
+  ? videoData.video
+  : `http://localhost:3000${videoData.video}`;
 
     return (
-        <div className="reel">
-
+        <div className="reel">        
             {/* VIDEO */}
             <video
                 ref={videoRef}
-                src={`http://localhost:3000${videoData.video}`}
+                src={videoSrc}
                 loop
                 muted
                 playsInline
@@ -239,8 +240,8 @@ const [comments, setComments] = useState(videoData.commentsCount);
         {videoData.name || "d1"}
     </h3>
 
-    <button className="visit-btn" onClick={openWebsite}>
-        visit store
+    <button className="visit-btn bg-[#5f4763] text-white font-bold py-2 px-4 rounded-full" onClick={openWebsite}>
+        Model Profile
     </button>
 
 </div>

@@ -6,6 +6,12 @@ import axios from "axios";
 import { useContext } from "react";
 import { useRef } from "react";
 import ReelFeed from "../components/ReelFeed";
+import category from '../Pages/CategoryPage';
+import { Spotlight } from "@/components/ui/spotlight";
+import { BackgroundGradient } from "@/components/ui/background-gradient";
+import { BackgroundRippleEffect } from "@/components/ui/BackgroundRippleEffect";
+import { HeroHighlight, Highlight } from "@/components/ui/HeroHighlight";
+
 function LandingPage() {
 const { user, loading } = useContext(AuthContext);
 
@@ -25,6 +31,7 @@ const videoRefs = useRef([]);
     const navigate = useNavigate();
     const [topPartners, setTopPartners] = useState([]);
     const [topReels, setTopReels] = useState([]);
+    const [isCreatorLoggedIn, setIsCreatorLoggedIn] = useState(false);
 useEffect(() => {
   const fetchData = async () => {
     try {
@@ -63,8 +70,31 @@ useEffect(() => {
       threshold: 0.6
     }
   );
+  /*
+  useEffect(() => {
 
+  async function checkCreatorLogin() {
+    try {
 
+      const res = await axios.get(
+        "http://localhost:3000/partner/check-auth",
+        { withCredentials: true }
+      );
+
+      if (res.data.loggedIn) {
+        setIsCreatorLoggedIn(true);
+      }
+
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  checkCreatorLogin();
+
+}, []);
+
+*/
   videoRefs.current.forEach((video) => {
     if (video) observer.observe(video);
   });
@@ -83,17 +113,19 @@ useEffect(() => {
 
     return (
 
-        <div className="landing">
+      
+<div className="relative min-h-screen w-full bg-black overflow-x-hidden">
 
-            {/* NAVBAR */}
-           <nav className="navbar">
-    <h2 className="logo">Cravings</h2>
+ 
+<div className="relative z-10">
+  <nav className="navbar relative z-[100]">
+    <h2 className="logo z-[100] ">Flaunt</h2>
 
     <div className="nav-buttons">
         {!user ? (
             <>
                 <button
-                    className="login-btn"
+                    className="login-btn "
                     onClick={() => navigate("/user/login")}
                 >
                     Login
@@ -108,55 +140,61 @@ useEffect(() => {
             </>
         ) : (
             <>
+
+            
+<BackgroundGradient
+  className="rounded-xl px-8 py-4 bg-black text-white font-semibold cursor-pointer">
                 <button
-                    className="login-btn" style={{ background: "#ff4d4d" }}
+                    className="bg-transparent text-white font-semibold cursor-pointer " 
                     onClick={() => navigate("/reels")}
                 >
-                    Reels
+                    Model Drops
                 </button>
+
+            </BackgroundGradient>    
             </>
         )}
     </div>
 </nav>
-
+       
+      <HeroHighlight className="relative z-0 ">
+        <div className="landing z-90">
+            {/* NAVBAR */}
+         
 
             {/* HERO SECTION */}
             <div className="hero">
 
-                <h1>
-                    Discover What Everyone Is Eating Today 🔥
+                <h1 className="tracking-tight md:px-8 md:py-4">
+Where Style Goes Viral
                 </h1>
-
-                <p>
-                    Watch short food reels, explore trending dishes,
-                    and save your next craving.
-                </p>
-
-                <button 
-                    className="explore-btn"
-                    onClick={() => navigate(user ? "/reels" : "/user/login")}
-                >
-                    Start Exploring →
-                </button>
+<BackgroundGradient className="rounded-xl px-8 py-4">
+  <button
+    className="bg-transparent text-white font-semibold cursor-pointer tracking-tight"
+    onClick={() => navigate(user ? "/reels" : "/user/login")}
+  >
+    Find Your Aesthetic →
+  </button>
+</BackgroundGradient>
 
             </div>
+          
 
 
             {/* PREVIEW SECTION */}
-      <div className="top-partners">
+      <div className="top-partners ">
 
   {topPartners.map((partner, index) => (
     
-    <div key={partner._id} className="partner-circle">
+    <div key={partner._id} className="partner-circle ">
        
      <img onClick={() => navigate(`/partner/${partner._id}/profile`)}
   src={partner.partnerDetails?.image}
   alt={partner.partnerDetails?.name}
-  className="circle-img"
+  className="circle-img border-[3px] border-[#8d60a8]"
 />
 
-      <p>#{index + 1}</p>
-      <p>{partner.partnerDetails?.name}</p>
+     
 
     </div>
   ))}
@@ -165,7 +203,7 @@ useEffect(() => {
 {/* 🔥 TOP 3 REELS SECTION */}
 <div className="top-reels">
 
-  <h2 className="section-title">🔥 Most Loved Reels</h2>
+  <h2 className="section-title font-satoshi tracking-tight "> Today's Top Fit Checks</h2>
 
   <div className="reels-container">
     {topReels.map((reel, index) => (
@@ -187,19 +225,17 @@ useEffect(() => {
   </div>
 
 </div>
-
-
-            {/* CATEGORIES */}
+{/* CATEGORIES */}
             <div className="categories">
 
-                <h2>Browse By Taste</h2>
+                <h2 className="font-satoshi text-xl ">Browse By Style</h2>
 
-               <div className="chips">
+               <div className="chips font-satoshi ">
   {["Old Money", "Street Wear", "Traditional", "Aesthetic", "Minimal", "Maximal"].map((cat) => (
     <span
       key={cat}
-      onClick={() => handleCategoryClick(cat)}
-      style={{ cursor: "pointer" }}
+      onClick={() => navigate(`/category/${cat}`)}
+      
     >
       {cat}
     </span>
@@ -208,32 +244,46 @@ useEffect(() => {
 
             </div>
 
+            
+            <div className="partner font-satoshi tracking-tight">
 
-            {/* PARTNER CTA */}
-            <div className="partner">
+                <h2 className="font-bold font-xl font-satoshi" style={{color:"white"}}>Show Your Style to the World</h2>
 
-                <h2>Own a Food Business?</h2>
+            
 
-                <p>
-                    Upload reels and attract thousands of hungry customers.
+                <p className="font-satoshi" style={{color:"white", marginBottom:"20px", marginTop:"20px", maxWidth:"300px", marginLeft:"auto", marginRight:"auto"}}>
+                   Post your looks, share reels, and build your personal style audience.
                 </p>
-
-                <button className="register-btn"
-                    onClick={() => navigate("/partner/register")}
-                >
-                    Join as Food Partner
-                </button>
-
-                <button className="login-btn2"
-                    onClick={() => navigate("/partner/login")}
-                >
-                    Partner Login
-                </button>
+            
+              
 
             </div>
+            
+</div>
 
+</HeroHighlight>
+<div>
+    <button
+      className="login-btn font-satoshi"
+     
+      onClick={() => navigate("/partner/register")}
+    >
+      Start Your Profile
+    </button>
 
-        </div>
+    <button
+      className="login-btn font-satoshi"
+      style={{ background: "#8d60a8" }}
+      onClick={() => navigate("/partner/login")}
+    >
+      Creator Login
+    </button>
+  
+     </div>   
+
+     </div>
+    
+      </div>  
     );
 }
 

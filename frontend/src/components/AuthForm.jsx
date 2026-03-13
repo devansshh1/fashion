@@ -1,22 +1,33 @@
 import React from 'react';
 
-function AuthForm({title, fields, buttonText, onSubmit}) {
+function AuthForm({title, fields, buttonText, onSubmit, error}) {
     return (
         <div className="container">
-            <div className="card">
+            <div className="card   ">
 
-                <h2 className="title">{title}</h2>
+                <h2 className="title  ">{title}</h2>
 
                 <form onSubmit={onSubmit} encType="multipart/form-data">
                     {fields.map((field, index)=>(
-                        <input
-                            key={index}
-                            name={field.name}
-                            className="input"
-                            type={field.type}
-                            placeholder={field.placeholder}
-                        />
-                    ))}
+                       field.type === "file" ? (
+  <label className="file-upload text-black font-bold">
+    Upload Profile Photo
+    <input
+      type="file"
+      name={field.name}
+      accept="image/*"
+      hidden
+    />
+  </label>
+) : (
+  <input
+    type={field.type}
+    name={field.name}
+    placeholder={field.placeholder}
+  />
+)))}
+
+    {error && <p className="error  font-bold text-xl text-red-500">{error}</p>}
 
                     <button type="submit" className="button">
                         {buttonText}

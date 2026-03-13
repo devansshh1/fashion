@@ -11,16 +11,10 @@ const foodPartnerSchema=new mongoose.Schema({
     },password:{
         type:String,
         required:true
-    },address:{
+    },image:{
         type:String,
         required:true
-     },totalMeals:{
-        type:Number,
-        required:true
-    },customersServed:{
-        type:Number,
-        required:true
-     },image:{
+     },InstagramHandle:{
         type:String,
         required:true
      }

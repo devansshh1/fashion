@@ -1,50 +1,35 @@
 const express = require("express");
-const router = express.Router();
 const multer = require("multer");
-const path = require("path");
 
 const postc = require("../auth/post.controller");
+
+const path = require("path");
 const { authUser } = require("../middlewares/auth.middleware");
+const { uploadVideo } = require("../service/storage.service");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueName =
-      Date.now() +
-      "-" +
-      Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname);
 
-    cb(null, uniqueName);
-  },
+const router = express.Router();
+const upload = multer({
+  storage: multer.memoryStorage(),
 });
 
-const upload = multer({
-  storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
-  },
-  fileFilter: function (req, file, cb) {
-    const allowedTypes = /jpeg|jpg|png|webp/;
+router.post("/upload/video", upload.single("video"), async (req, res) => {
+  try {
+    const uploaded = await uploadVideo(req.file.buffer, req.file.originalname);
 
-    const extname = allowedTypes.test(
-      path.extname(file.originalname).toLowerCase()
-    );
+    // Save video URL in DB
+    const newVideo = await Video.create({
+      video: uploaded.url,
+      user: req.user._id, // or modelId if different
+    });
 
-    const mimetype = allowedTypes.test(file.mimetype);
-
-    if (extname && mimetype) {
-      return cb(null, true);
-    } else {
-      cb(new Error("Only image files are allowed"));
-    }
+    res.json({ success: true, video: newVideo });
+  } catch (err) {
+    console.error("Upload failed:", err);
+    res.status(500).json({ error: "Video upload failed" });
   }
 });
 
-// Upload
-router.post("/upload", authUser, upload.single("image"), postc.uploadPost);
 
 // 🔥 NEW ROUTES
 router.get("/", postc.getAllPosts); // all posts (with optional category filter)

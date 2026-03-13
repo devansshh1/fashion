@@ -63,46 +63,113 @@ async function logoutUser(req,res){
 });
     res.status(200).json({message:'Logout successful'});
 }
-async function registerFoodPartner(req,res){
-    console.log("REQ.BODY:", req.body); // ⭐ ADD THIS
-    console.log("REQ.FILE:", req.file); // ⭐ ADD THIS
-    //food partner registration logic here
-    const {
+async function registerFoodPartner(req, res) {
+
+  console.log("REQ.BODY:", req.body);
+  console.log("REQ.FILE:", req.file);
+
+  const { name, email, password, InstagramHandle } = req.body;
+
+if (!req.file) {
+    return res.status(400).json({
+      message: "Profile image is required"
+    });
+  }
+
+  if (!name || name.trim().length < 2) {
+  return res.status(400).json({
+    message: "Name must be at least 2 characters"
+  });
+}
+const emailRegex = /^[a-zA-Z0-9._%+-]+@vitbhopal\.ac\.in$/;
+
+if (!emailRegex.test(email)) {
+  return res.status(400).json({
+    message: "Enter a valid VIT Bhopal email"
+  });
+}
+
+
+  // password validation
+  if (!password) {
+    return res.status(400).json({
+      message: "Password is required"
+    });
+  }
+
+  // instagram validation
+  if (!InstagramHandle || InstagramHandle.trim() === "") {
+    return res.status(400).json({
+      message: "Instagram handle is required"
+    });
+  }
+
+  const instaRegex = /^[a-zA-Z0-9._]{3,30}$/;
+
+  let cleanHandle = InstagramHandle.replace("@", "");
+
+  if (!instaRegex.test(cleanHandle)) {
+    return res.status(400).json({
+      message: "Invalid Instagram username"
+    });
+  }
+
+  // image validation
+  
+  const allowedTypes = ["image/jpeg","image/png","image/webp"];
+
+if (!allowedTypes.includes(req.file.mimetype)) {
+  return res.status(400).json({
+    message: "Only JPG, PNG, WEBP images allowed"
+  });
+}
+
+  // check existing partner
+  const existingPartner = await fp.findOne({ email });
+
+  if (existingPartner) {
+    return res.status(400).json({
+      message: "Model already exists"
+    });
+  }
+
+  // upload image AFTER validation
+  const uploadedImage = await uploadImage(
+    req.file.buffer,
+    req.file.originalname
+  );
+
+  // hash password
+  const hashedPassword = await pass.hash(password, 10);
+
+  // create partner
+  const newPartner = await fp.create({
     name,
     email,
-    password,
-    address,
-    totalMeals,
-    customersServed
-} = req.body;
+    password: hashedPassword,
+    InstagramHandle: cleanHandle,
+    image: uploadedImage.url
+  });
 
- const uploadedImage = await uploadImage(
-  req.file.buffer,
-  req.file.originalname
-);
-    const existingPartner=await fp.findOne({email});
-    if(existingPartner){
-        return res.status(400).json({message:'Food Partner already exists'});
-    }
-    const hashedPassword=await pass.hash(password,10);
-    const newPartner=await fp.create({
-        name,
-        email,
-        password:hashedPassword,
-        address,
-        totalMeals,
-        customersServed, image: uploadedImage.url
-    });
-    const token=jwt.sign({id:newPartner._id},process.env.JWT_SECRET,{ expiresIn: "7d" });
+  const token = jwt.sign(
+    { id: newPartner._id },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+
   res.cookie("partnerToken", token, {
     httpOnly: true,
     secure: false,
-    sameSite: "lax",maxAge: 7 * 24 * 60 * 60 * 1000
-});
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000
+  });
 
-
-
-    res.status(201).json({message:'Food Partner registered successfully',_id:newPartner._id,name:newPartner.name,email:newPartner.email});
+  res.status(201).json({
+    message: "Model registered successfully",
+    _id: newPartner._id,
+    name: newPartner.name,
+    email: newPartner.email
+  });
 }
 async function loginFoodPartner(req,res){
     //food partner login logic here
@@ -137,5 +204,27 @@ async function logoutFoodPartner(req,res){
 
     res.status(200).json({message:'Logout successful'});
 }
+// controllers/partnerAuth.js
+/*async function checkPartnerAuth(req, res) {
+
+    const token = req.cookies.partnerToken;
+
+    if (!token) {
+        return res.json({ loggedIn: false });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        res.json({
+            loggedIn: true,
+            partnerId: decoded.id
+        });
+
+    } catch (err) {
+        res.json({ loggedIn: false });
+    }
+}
+    */
 
 module.exports={registerUser, loginUser, logoutUser, registerFoodPartner, loginFoodPartner, logoutFoodPartner};

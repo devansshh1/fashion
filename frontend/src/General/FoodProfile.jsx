@@ -28,6 +28,13 @@ useEffect(()=>{
 
 },[id]);
 
+const getVideoUrl = (videoPath) => {
+  if (!videoPath) return "";
+  return videoPath.startsWith("http")
+    ? videoPath
+    : `http://localhost:3000${videoPath}`;
+};
+
     return (
         <div className="profile-container">
 
@@ -35,7 +42,18 @@ useEffect(()=>{
             <div className="profile-header">
 
                 <div className="profile-top">
-                    <div className="profile-avatar"></div>
+                    <div className="profile-avatar">
+                         {foodPartner?.image && (
+    <img
+      src={
+        foodPartner.image.startsWith("http")
+          ? foodPartner.image
+          : `http://localhost:3000${foodPartner.image}`
+      }
+      alt={foodPartner.name}
+    />
+  )}
+                    </div>
 
                     <div className="profile-info">
                         <h2>{foodPartner ? foodPartner.name : "Loading..."}</h2>
@@ -46,13 +64,13 @@ useEffect(()=>{
                 {/* STATS */}
                 <div className="profile-stats">
                     <div>
-                        <h3>{foodPartner ? foodPartner.totalMeals : "Loading..."}</h3>
-                        <span>Total Meals</span>
+                       <h3>{(foodPartner?.totalPosts ?? 0)||'Loading'}</h3>
+                        <span>Posts</span>
                     </div>
 
                     <div>
-                        <h3>{foodPartner ? foodPartner.customersServed : "Loading..."}</h3>
-                        <span>Customers Served</span>
+                        <h3>{foodPartner ? foodPartner.totalLikes : "Loading..."}</h3>
+                        <span>Total Likes</span>
                     </div>
                 </div>
 
@@ -62,31 +80,20 @@ useEffect(()=>{
             <div className="divider"></div>
 
             {/* VIDEO GRID */}
-           <div className="video-grid">
-
-    {videos.length === 0 && (
-        <p>No videos uploaded yet.</p>
-    )}
-<div className="flex-wrap gap-5 w-[20%] h-50vh overflow-y-auto flex items-start justify-start"> 
-       {videos.map(video => (
-
-        <div key={video._id} className="video-card w-[48%] ">
-
-            <video
-                src={video.video}
-                controls
-                preload="metadata"
-                width="100%"
-            />
-
-        </div>
-
-
-
-    ))}
-</div>
-
-
+          <div className="video-grid">
+  {videos.length === 0 ? (
+    <p className="empty-msg">No uploads yet.</p>
+  ) : (
+    videos.map(video => (
+      <div key={video._id} className="video-card">
+        <video className="video-grid-video"
+          src={getVideoUrl(video.video)}
+          controls
+          playsInline
+        />
+      </div>
+    ))
+  )}
 </div>
 
 
