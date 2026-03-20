@@ -10,9 +10,17 @@ const authRoutes = require('../routes/auth.routes');
 const postRoutes = require('../routes/post.routes');
 const app = express();
 
+const allowedLocalhostOrigin = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/;
+
 /* ✅ CORS FIRST */
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: (origin, callback) => {
+        // Allow non-browser clients and local Vite dev servers on any port.
+        if (!origin || allowedLocalhostOrigin.test(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true
 }));
 app.use(express.json());

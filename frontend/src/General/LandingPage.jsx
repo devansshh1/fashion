@@ -11,10 +11,24 @@ import { Spotlight } from "@/components/ui/spotlight";
 import { BackgroundGradient } from "@/components/ui/background-gradient";
 import { BackgroundRippleEffect } from "@/components/ui/BackgroundRippleEffect";
 import { HeroHighlight, Highlight } from "@/components/ui/HeroHighlight";
-
+import { useLocation } from "react-router-dom";
 function LandingPage() {
 const { user, loading } = useContext(AuthContext);
+;
 
+const videoRefs = useRef([]);
+    const navigate = useNavigate();
+    const [topPartners, setTopPartners] = useState([]);
+    const [topReels, setTopReels] = useState([]);
+    const [isPartnerLoggedIn, setIsPartnerLoggedIn] = useState(() => localStorage.getItem("isPartnerLoggedIn") === "true");
+    const [partnerId, setPartnerId] = useState(() => localStorage.getItem("partnerId"));
+    const location = useLocation();
+const getVideoUrl = (videoPath) => {
+  if (!videoPath) return "";
+  return videoPath.startsWith("http")
+    ? videoPath
+    : `http://localhost:3000${videoPath}`;
+};
 const handleCategoryClick = (category) => {
   const choice = window.confirm(
     `Do you want to VIEW posts in "${category}"?\n\nClick Cancel to UPLOAD your post.`
@@ -25,13 +39,7 @@ const handleCategoryClick = (category) => {
   } else {
     navigate(`/upload-post/${category}`);
   }
-};
-
-const videoRefs = useRef([]);
-    const navigate = useNavigate();
-    const [topPartners, setTopPartners] = useState([]);
-    const [topReels, setTopReels] = useState([]);
-    const [isCreatorLoggedIn, setIsCreatorLoggedIn] = useState(false);
+}
 useEffect(() => {
   const fetchData = async () => {
     try {
@@ -49,7 +57,54 @@ useEffect(() => {
   };
 
   fetchData();
-}, []);
+}, [location]);
+
+useEffect(() => {
+
+    async function checkPartnerLogin(){
+
+        try{
+
+            const res = await axios.get(
+              "http://localhost:3000/api/partner/check-auth",
+                { withCredentials: true }
+            );
+
+            if(res.data.loggedIn){
+                setIsPartnerLoggedIn(true);
+              setPartnerId(res.data.partner?.id || null);
+              localStorage.setItem("isPartnerLoggedIn", "true");
+              if (res.data.partner?.id) {
+                localStorage.setItem("partnerId", res.data.partner.id);
+              }
+            } else {
+              setIsPartnerLoggedIn(false);
+              setPartnerId(null);
+              localStorage.removeItem("isPartnerLoggedIn");
+              localStorage.removeItem("partnerId");
+            }
+
+        }catch(err){
+          if (err?.response?.status === 401) {
+            setIsPartnerLoggedIn(false);
+            setPartnerId(null);
+            localStorage.removeItem("isPartnerLoggedIn");
+            localStorage.removeItem("partnerId");
+            return;
+          }
+
+          const cachedLogin = localStorage.getItem("isPartnerLoggedIn") === "true";
+          const cachedPartnerId = localStorage.getItem("partnerId");
+          setIsPartnerLoggedIn(cachedLogin);
+          setPartnerId(cachedPartnerId);
+        }
+    }
+
+    checkPartnerLogin();
+
+}, [location]);
+
+
 
 useEffect(() => {
   if (!topReels.length) return;
@@ -70,31 +125,8 @@ useEffect(() => {
       threshold: 0.6
     }
   );
-  /*
-  useEffect(() => {
+ 
 
-  async function checkCreatorLogin() {
-    try {
-
-      const res = await axios.get(
-        "http://localhost:3000/partner/check-auth",
-        { withCredentials: true }
-      );
-
-      if (res.data.loggedIn) {
-        setIsCreatorLoggedIn(true);
-      }
-
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
-  checkCreatorLogin();
-
-}, []);
-
-*/
   videoRefs.current.forEach((video) => {
     if (video) observer.observe(video);
   });
@@ -122,7 +154,7 @@ useEffect(() => {
     <h2 className="logo z-[100] ">Flaunt</h2>
 
     <div className="nav-buttons">
-        {!user ? (
+      {!user ? (
             <>
                 <button
                     className="login-btn "
@@ -140,19 +172,17 @@ useEffect(() => {
             </>
         ) : (
             <>
+  <BackgroundGradient
+    className="rounded-xl px-8 py-4 bg-black text-white font-semibold cursor-pointer">
+          <button
+            className="bg-transparent text-white font-semibold cursor-pointer " 
+            onClick={() => navigate("/reels")}
+          >
+            Model Drops
+          </button>
 
-            
-<BackgroundGradient
-  className="rounded-xl px-8 py-4 bg-black text-white font-semibold cursor-pointer">
-                <button
-                    className="bg-transparent text-white font-semibold cursor-pointer " 
-                    onClick={() => navigate("/reels")}
-                >
-                    Model Drops
-                </button>
-
-            </BackgroundGradient>    
-            </>
+        </BackgroundGradient>    
+        </>
         )}
     </div>
 </nav>
@@ -171,7 +201,7 @@ Where Style Goes Viral
 <BackgroundGradient className="rounded-xl px-8 py-4">
   <button
     className="bg-transparent text-white font-semibold cursor-pointer tracking-tight"
-    onClick={() => navigate(user ? "/reels" : "/user/login")}
+    onClick={() => navigate("/category/Aesthetic/view")}
   >
     Find Your Aesthetic →
   </button>
@@ -211,7 +241,7 @@ Where Style Goes Viral
 
         <video
   ref={(el) => (videoRefs.current[index] = el)}
-  src={`http://localhost:3000${reel.video}`}
+  src={getVideoUrl(reel.video)}
   className="top-reel-video"
   muted
   loop
@@ -258,28 +288,43 @@ Where Style Goes Viral
               
 
             </div>
+            <div className="landing-cta">
+{!isPartnerLoggedIn ? (
+
+<>
+<button
+className="register-btn font-satoshi landing-cta-btn"
+style={{ background: "#8d60a8" }}
+onClick={() => navigate("/partner/register")}
+>
+Start Your Profile
+</button>
+
+<button
+className="register-btn font-satoshi landing-cta-btn"
+style={{ background: "#8d60a8" }}
+onClick={() => navigate("/partner/login")}
+>
+Creator Login
+</button>
+</>
+
+) : (
+
+<button
+className="upload-btn font-satoshi landing-cta-btn"
+style={{ background: "#8d60a8" }}
+onClick={() => navigate(partnerId ? `/partner/dashboard/${partnerId}` : "/partner/login")}
+>
+Upload Reel
+</button>
+
+)}
+            </div>
             
 </div>
 
 </HeroHighlight>
-<div>
-    <button
-      className="login-btn font-satoshi"
-     
-      onClick={() => navigate("/partner/register")}
-    >
-      Start Your Profile
-    </button>
-
-    <button
-      className="login-btn font-satoshi"
-      style={{ background: "#8d60a8" }}
-      onClick={() => navigate("/partner/login")}
-    >
-      Creator Login
-    </button>
-  
-     </div>   
 
      </div>
     

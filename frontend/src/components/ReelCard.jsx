@@ -1,7 +1,8 @@
-import React, { useEffect, useRef ,useState} from "react";
+import React, { useContext, useEffect, useRef ,useState} from "react";
 import { FaHeart, FaRegCommentDots, FaBookmark } from "react-icons/fa";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 
 
@@ -50,6 +51,7 @@ async function commentOnFood(foodId, comment) {
 }
 
 function ReelCard({ videoData }) {
+const { user } = useContext(AuthContext);
 const navigate = useNavigate();
 const [showComments, setShowComments] = useState(false);
 const [commentList, setCommentList] = useState([]);
@@ -60,6 +62,16 @@ const [saved, setSaved] = useState(false);
 const [comments, setComments] = useState(videoData.commentsCount);
   const [liked, setLiked] = useState(false);  
     const videoRef = useRef(null);
+const isPartnerLoggedIn = localStorage.getItem("isPartnerLoggedIn") === "true";
+
+const requireLogin = () => {
+  if (user || isPartnerLoggedIn) {
+    return true;
+  }
+
+  alert("Please login");
+  return false;
+};
 
     useEffect(() => {
 
@@ -122,6 +134,7 @@ const [comments, setComments] = useState(videoData.commentsCount);
   size={28}
   color={liked ? "red" : "white"}
   onClick={async () => {
+    if (!requireLogin()) return;
 
     const newLikedState = !liked;
     setLiked(newLikedState);
@@ -148,6 +161,8 @@ const [comments, setComments] = useState(videoData.commentsCount);
   size={26}
   color={saved ? "gold" : "white"}
   onClick={async () => {
+    if (!requireLogin()) return;
+
     try {
       const resp = await axios.post(
         `http://localhost:3000/api/food/${videoData._id}/save`,
@@ -170,6 +185,8 @@ const [comments, setComments] = useState(videoData.commentsCount);
                    <FaRegCommentDots
   size={26}
   onClick={async () => {
+    if (!requireLogin()) return;
+
     setShowComments(true);
 
     const resp = await axios.get(
@@ -205,6 +222,8 @@ const [comments, setComments] = useState(videoData.commentsCount);
 
       <button
         onClick={async () => {
+          if (!requireLogin()) return;
+
           await axios.post(
             `http://localhost:3000/api/food/${videoData._id}/comment`,
             { text: newComment },

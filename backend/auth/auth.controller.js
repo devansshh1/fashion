@@ -204,27 +204,4 @@ async function logoutFoodPartner(req,res){
 
     res.status(200).json({message:'Logout successful'});
 }
-// controllers/partnerAuth.js
-/*async function checkPartnerAuth(req, res) {
-
-    const token = req.cookies.partnerToken;
-
-    if (!token) {
-        return res.json({ loggedIn: false });
-    }
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-        res.json({
-            loggedIn: true,
-            partnerId: decoded.id
-        });
-
-    } catch (err) {
-        res.json({ loggedIn: false });
-    }
-}
-    */
-
 module.exports={registerUser, loginUser, logoutUser, registerFoodPartner, loginFoodPartner, logoutFoodPartner};

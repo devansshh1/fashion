@@ -21,8 +21,7 @@ async function addFood(req, res) {
     );
 
     const item = await FoodModel.create({
-      name: req.body.name,
-      description: req.body.description,
+      title: req.body.title,
       video: uploaded.url, // ✅ IMAGEKIT URL
       foodPartnerId: req.foodPartner._id,
       likesCount: 0,

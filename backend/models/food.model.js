@@ -3,13 +3,13 @@ const { schema } = require('./post.model');
 const foodSchema=new mongoose.Schema({
     name:{
         type:String,
-        required:true
+       
     },
     video:{
         type:String,
         required:true
     },
-    description:{
+    title:{
         type:String,
         required:true
      },

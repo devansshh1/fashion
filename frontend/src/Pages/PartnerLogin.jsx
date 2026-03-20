@@ -23,7 +23,9 @@ function PartnerLogin(){
         password: data.password 
     }, { withCredentials: true })
     if (resp.status === 200) {
-        navigate(`/partner/dashboard/${data._id}`); // Redirect to home page on successful login
+        localStorage.setItem("partnerId", resp.data._id);
+        localStorage.setItem("isPartnerLoggedIn", "true");
+        navigate(`/partner/dashboard/${resp.data._id}`); // Redirect to dashboard with the actual partner id
     }
     console.log("RESPONSE:", resp.data);
 }

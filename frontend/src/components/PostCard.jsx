@@ -1,12 +1,26 @@
 import axios from "axios";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 function PostCard({ post, refresh }) {
+  const { user } = useContext(AuthContext);
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const isPartnerLoggedIn = localStorage.getItem("isPartnerLoggedIn") === "true";
+
+  const requireLogin = () => {
+    if (user || isPartnerLoggedIn) {
+      return true;
+    }
+
+    alert("Please login");
+    return false;
+  };
 
   const handleLike = async () => {
+    if (!requireLogin()) return;
+
     await axios.post(
       `http://localhost:3000/api/posts/${post._id}/like`,
       {},
@@ -16,6 +30,8 @@ function PostCard({ post, refresh }) {
   };
 
   const handleSave = async () => {
+    if (!requireLogin()) return;
+
     await axios.post(
       `http://localhost:3000/api/posts/${post._id}/save`,
       {},
@@ -25,6 +41,8 @@ function PostCard({ post, refresh }) {
   };
 
   const fetchComments = async () => {
+    if (!requireLogin()) return;
+
     const resp = await axios.get(
       `http://localhost:3000/api/posts/${post._id}/comments`
     );
@@ -33,6 +51,7 @@ function PostCard({ post, refresh }) {
   };
 
   const postComment = async () => {
+    if (!requireLogin()) return;
     if (!newComment.trim()) return;
 
     await axios.post(
@@ -62,7 +81,7 @@ function PostCard({ post, refresh }) {
         </div>
 
         <div className="card-content">
-          <h3>{post.name}</h3>
+          <h3 className="text-lg font-bold text-white">{post.name}</h3>
 
           <div className="stats">
             <span onClick={handleLike}>❤️ {post.likesCount}</span>

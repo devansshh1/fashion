@@ -2,6 +2,7 @@ const Post = require("../models/post.model");
 const Like = require("../models/like.model");
 const Save = require("../models/save.model");
 const Comment = require("../models/comment.model");
+const { uploadImage } = require("../service/storage.service");
 
 
 // ================= UPLOAD =================
@@ -13,10 +14,15 @@ async function uploadPost(req, res) {
       return res.status(400).json({ message: "Image required" });
     }
 
+    const uploadedImage = await uploadImage(
+      req.file.buffer,
+      req.file.originalname
+    );
+
     const post = await Post.create({
       name,
       category,
-      image: `/uploads/${req.file.filename}`,
+      image: uploadedImage.url,
       userId: req.user._id
     });
 

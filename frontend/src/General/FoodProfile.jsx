@@ -5,6 +5,7 @@ function FoodProfile() {
     const {id} = useParams();
    const [foodPartner,setFoodPartner] = useState(null);
 const [videos,setVideos] = useState([]);
+const instaUrl = `https://instagram.com/${foodPartner?.InstagramHandle}`;
 
 useEffect(()=>{
 
@@ -57,7 +58,15 @@ const getVideoUrl = (videoPath) => {
 
                     <div className="profile-info">
                         <h2>{foodPartner ? foodPartner.name : "Loading..."}</h2>
-                        <p>{foodPartner ? foodPartner.address : "Loading address..."}</p>
+
+                   <a 
+  href={`https://instagram.com/${foodPartner?.InstagramHandle}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="username"
+>
+  @{foodPartner?.InstagramHandle}
+</a>
                     </div>
                 </div>
 
