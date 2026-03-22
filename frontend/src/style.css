@@ -413,15 +413,23 @@ input:focus {
 }
 .reel-container{
     height:100vh;
-    width:80vw;
+    width:100%;
+    max-width:430px;
+    margin:0 auto;
     overflow-y:scroll;
     scroll-snap-type:y mandatory;
-    background:black;
+    scroll-behavior:smooth;
+    background:#050505;
+    -ms-overflow-style:none;
+    scrollbar-width:none;
 }
 .reel{
     position:relative;
     height:100vh;
+    width:100%;
     scroll-snap-align:start;
+    overflow:hidden;
+    background:#000;
 }
 .login-btn2{
     margin-left:6px;
@@ -433,15 +441,34 @@ input:focus {
     width:100%;
     height:100%;
     object-fit:cover;
+    display:block;
+}
+.reel-gradient{
+    position:absolute;
+    left:0;
+    width:100%;
+    pointer-events:none;
+    z-index:1;
+}
+.reel-gradient-top{
+    top:0;
+    height:28%;
+    background:linear-gradient(180deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.18) 65%, rgba(0,0,0,0) 100%);
+}
+.reel-gradient-bottom{
+    bottom:0;
+    height:34%;
+    background:linear-gradient(0deg, rgba(0,0,0,0.84) 0%, rgba(0,0,0,0.3) 58%, rgba(0,0,0,0) 100%);
 }
 .action-bar{
     position:absolute;
-    right:12px;
-    bottom:140px;
+    right:16px;
+    bottom:122px;
     display:flex;
     flex-direction:column;
-    gap:26px;
+    gap:22px;
     color:white;
+    z-index:3;
 }
 
 .action{
@@ -450,6 +477,10 @@ input:focus {
     align-items:center;
     cursor:pointer;
     font-size:14px;
+    text-shadow:0 2px 10px rgba(0,0,0,0.45);
+}
+.action svg{
+    filter:drop-shadow(0 6px 12px rgba(0,0,0,0.35));
 }
 .bottom-overlay{
     position:absolute;
@@ -463,24 +494,32 @@ input:focus {
     margin-bottom:10px;
 }
 .visit-btn{
-    
-    
     color:white;
     padding:10px 18px;
-    
+    border:none;
+    border-radius:999px;
+    background:rgba(129, 87, 153, 0.88);
+    font-weight:700;
     cursor:pointer;
+    box-shadow:0 10px 24px rgba(0,0,0,0.22);
+    backdrop-filter:blur(10px);
 }
 .bottom-nav{
     position:fixed;
     bottom:0;
+    left:50%;
+    transform:translateX(-50%);
     width:100%;
+    max-width:430px;
     height:70px;
-    background:black;
-    border-top:1px solid #222;
+    background:rgba(0,0,0,0.92);
+    border-top:1px solid rgba(255,255,255,0.12);
     display:flex;
     justify-content:space-around;
     align-items:center;
     color:white;
+    z-index:10;
+    backdrop-filter:blur(12px);
 }
 
 .bottom-nav div{
@@ -492,21 +531,24 @@ input:focus {
 }
 .top-overlay{
     position:absolute;
-    top:20px;
+    top:0;
     left:0;
     width:100%;
-    padding:0 16px;
+    padding:20px 16px 0;
 
     display:flex;
     justify-content:space-between;
     align-items:center;
 
     color:white;
-    z-index:5;
+    z-index:3;
 }
 .item-name{
     font-size:20px;
     font-weight:600;
+    max-width:45%;
+    line-height:1.1;
+    text-shadow:0 2px 10px rgba(0,0,0,0.45);
 }
 /* ===== PAGE BACKGROUND ===== */
 

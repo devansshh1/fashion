@@ -114,8 +114,7 @@ const requireLogin = () => {
   : `http://localhost:3000${videoData.video}`;
 
     return (
-        <div className="reel">        
-            {/* VIDEO */}
+        <div className="reel">
             <video
                 ref={videoRef}
                 src={videoSrc}
@@ -124,6 +123,9 @@ const requireLogin = () => {
                 playsInline
                 className="video"
             />
+
+            <div className="reel-gradient reel-gradient-top" />
+            <div className="reel-gradient reel-gradient-bottom" />
 
             {/* RIGHT ACTION BAR */}
             <div className="action-bar">
@@ -259,7 +261,7 @@ const requireLogin = () => {
         {videoData.name || "d1"}
     </h3>
 
-    <button className="visit-btn bg-[#5f4763] text-white font-bold py-2 px-4 rounded-full" onClick={openWebsite}>
+    <button className="visit-btn" onClick={openWebsite}>
         Model Profile
     </button>
 

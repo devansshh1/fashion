@@ -1,10 +1,13 @@
 import React,{useState,useEffect} from "react";
 import {useParams} from 'react-router-dom';
+import {useRef} from 'react';
 import API from '../api/API';
 function FoodProfile() {
     const {id} = useParams();
    const [foodPartner,setFoodPartner] = useState(null);
 const [videos,setVideos] = useState([]);
+const videoRef = useRef();
+const [selectedVideo, setSelectedVideo] = useState(null);
 const instaUrl = `https://instagram.com/${foodPartner?.InstagramHandle}`;
 
 useEffect(()=>{
@@ -28,6 +31,14 @@ useEffect(()=>{
     fetchProfile();
 
 },[id]);
+
+useEffect(() => {
+  if (selectedVideo) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "auto";
+  }
+}, [selectedVideo]);
 
 const getVideoUrl = (videoPath) => {
   if (!videoPath) return "";
@@ -92,19 +103,49 @@ const getVideoUrl = (videoPath) => {
           <div className="video-grid">
   {videos.length === 0 ? (
     <p className="empty-msg">No uploads yet.</p>
-  ) : (
-    videos.map(video => (
-      <div key={video._id} className="video-card">
-        <video className="video-grid-video"
-          src={getVideoUrl(video.video)}
-          controls
-          playsInline
-        />
-      </div>
-    ))
-  )}
+  ) : videos.map(video => (
+  <div
+    key={video._id}
+    className="video-card"
+    onClick={() => setSelectedVideo(video)}
+  >
+   <video
+  ref={videoRef}
+   
+  src={getVideoUrl(video.video)}
+  muted
+  playsInline
+  preload="metadata"
+  onClick={() => {
+    if (videoRef.current.paused) videoRef.current.play();
+    else videoRef.current.pause();
+  }}
+  className="w-full h-full object-cover"
+/>
+  </div>
+))}
 </div>
+{selectedVideo && (
+  <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
 
+    {/* CLOSE BUTTON */}
+    <button
+      onClick={() => setSelectedVideo(null)}
+      className="absolute top-5 right-5 text-white text-3xl z-50"
+    >
+      ✕
+    </button>
+
+    {/* VIDEO */}
+    <video
+      src={getVideoUrl(selectedVideo.video)}
+      autoPlay
+      loop
+      preload="metadata"
+      className="w-full h-full object-cover"
+    />
+  </div>
+)}
 
         </div>
     );

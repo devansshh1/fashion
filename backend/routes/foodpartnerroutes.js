@@ -17,7 +17,17 @@ router.get("/check-auth", authMiddleware.authFoodPartner, (req, res) => {
     });
 
 });
+
+router.post("/logout", (req, res) => {
+  res.clearCookie("partnerToken", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax"
+  });
+  res.json({ message: "Logged out" });
+});
 router.get('/:id/profile', partnerController.getPartnerProfile);
+
 
 router.get('/:id',authMiddleware.authFoodPartner, partnerController.getPartnerProfile);
 // routes/partner.js

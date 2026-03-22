@@ -57,10 +57,9 @@ async  function loginUser(req,res){
 async function logoutUser(req,res){
     res.clearCookie("userToken", {
     httpOnly: true,
-    sameSite: "lax",   // ⭐ REQUIRED for cross-origin
-    secure: false       // true ONLY if using HTTPS
-    ,maxAge: 7 * 24 * 60 * 60 * 1000
-});
+    sameSite: "lax",
+    secure: false
+    });
     res.status(200).json({message:'Logout successful'});
 }
 async function registerFoodPartner(req, res) {
@@ -198,8 +197,8 @@ async function logoutFoodPartner(req,res){
   res.clearCookie("partnerToken", {
     httpOnly: true,
     secure: false,
-    sameSite: "lax",maxAge: 7 * 24 * 60 * 60 * 1000
-});
+    sameSite: "lax"
+  });
 
 
     res.status(200).json({message:'Logout successful'});

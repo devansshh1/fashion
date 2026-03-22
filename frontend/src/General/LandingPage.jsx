@@ -13,8 +13,8 @@ import { BackgroundRippleEffect } from "@/components/ui/BackgroundRippleEffect";
 import { HeroHighlight, Highlight } from "@/components/ui/HeroHighlight";
 import { useLocation } from "react-router-dom";
 function LandingPage() {
-const { user, loading } = useContext(AuthContext);
-;
+const { user, loading, logout } = useContext(AuthContext);
+const [showMenu, setShowMenu] = useState(false);
 
 const videoRefs = useRef([]);
     const navigate = useNavigate();
@@ -23,12 +23,52 @@ const videoRefs = useRef([]);
     const [isPartnerLoggedIn, setIsPartnerLoggedIn] = useState(() => localStorage.getItem("isPartnerLoggedIn") === "true");
     const [partnerId, setPartnerId] = useState(() => localStorage.getItem("partnerId"));
     const location = useLocation();
+    
 const getVideoUrl = (videoPath) => {
   if (!videoPath) return "";
   return videoPath.startsWith("http")
     ? videoPath
     : `http://localhost:3000${videoPath}`;
 };
+
+const clearPartnerSession = () => {
+  localStorage.removeItem("isPartnerLoggedIn");
+  localStorage.removeItem("partnerId");
+  setIsPartnerLoggedIn(false);
+  setPartnerId(null);
+};
+
+const handleUserLogout = async () => {
+  if (!user) {
+    alert("First login as user");
+    return;
+  }
+
+  try {
+    await logout();
+    alert("User logged out");
+  } catch (err) {
+    console.log(err);
+    alert("Unable to logout user");
+  }
+};
+const handlePartnerLogout = async() => {
+   try {
+    await axios.post(
+      "http://localhost:3000/api/auth/partner/logout",
+      {},
+      { withCredentials: true }
+    );
+
+    clearPartnerSession();
+
+  alert("Model logged out");
+  } catch (err) {
+    console.log(err);
+    alert("Unable to logout model");
+  }
+};
+
 const handleCategoryClick = (category) => {
   const choice = window.confirm(
     `Do you want to VIEW posts in "${category}"?\n\nClick Cancel to UPLOAD your post.`
@@ -78,25 +118,16 @@ useEffect(() => {
                 localStorage.setItem("partnerId", res.data.partner.id);
               }
             } else {
-              setIsPartnerLoggedIn(false);
-              setPartnerId(null);
-              localStorage.removeItem("isPartnerLoggedIn");
-              localStorage.removeItem("partnerId");
+              clearPartnerSession();
             }
 
         }catch(err){
           if (err?.response?.status === 401) {
-            setIsPartnerLoggedIn(false);
-            setPartnerId(null);
-            localStorage.removeItem("isPartnerLoggedIn");
-            localStorage.removeItem("partnerId");
+            clearPartnerSession();
             return;
           }
 
-          const cachedLogin = localStorage.getItem("isPartnerLoggedIn") === "true";
-          const cachedPartnerId = localStorage.getItem("partnerId");
-          setIsPartnerLoggedIn(cachedLogin);
-          setPartnerId(cachedPartnerId);
+          clearPartnerSession();
         }
     }
 
@@ -104,7 +135,13 @@ useEffect(() => {
 
 }, [location]);
 
-
+useEffect(() => {
+  const handleClickOutside = () => setShowMenu(false);
+  if (showMenu) {
+    window.addEventListener("click", handleClickOutside);
+  }
+  return () => window.removeEventListener("click", handleClickOutside);
+}, [showMenu]);
 
 useEffect(() => {
   if (!topReels.length) return;
@@ -171,18 +208,46 @@ useEffect(() => {
                 </button>
             </>
         ) : (
-            <>
+            <div className="flex items-center gap-4">
   <BackgroundGradient
-    className="rounded-xl px-8 py-4 bg-black text-white font-semibold cursor-pointer">
+    className="rounded-xl px-8 py-4 bg-black text-white font-semibold cursor-pointer ">
           <button
             className="bg-transparent text-white font-semibold cursor-pointer " 
             onClick={() => navigate("/reels")}
           >
             Model Drops
           </button>
+</BackgroundGradient>  
+          <button
+    onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
+    className="text-white text-2xl px-2"
+  >
+    ⋮
+  </button>
 
-        </BackgroundGradient>    
-        </>
+  {/* DROPDOWN */}
+  {showMenu && (
+    <div  onClick={(e) => e.stopPropagation()}  className="absolute right-0 top-18 bg-black border border-gray-700 rounded-lg shadow-lg w-48 z-50">
+
+      <button
+        onClick={handleUserLogout}
+        className="block w-full text-left px-4 py-2 hover:bg-gray-800 text-white"
+      >
+        User Logout
+      </button>
+
+      <button
+        onClick={handlePartnerLogout}
+        className="block w-full text-left px-4 py-2 hover:bg-gray-800 text-white"
+      >
+        Model Logout
+      </button>
+
+    </div>
+  )}
+
+          
+        </div>
         )}
     </div>
 </nav>
