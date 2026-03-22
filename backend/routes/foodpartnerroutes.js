@@ -27,6 +27,7 @@ router.post("/logout", (req, res) => {
   res.json({ message: "Logged out" });
 });
 router.get('/:id/profile', partnerController.getPartnerProfile);
+router.patch('/:id', authMiddleware.authFoodPartner, partnerController.updatePartnerProfile);
 
 
 router.get('/:id',authMiddleware.authFoodPartner, partnerController.getPartnerProfile);

@@ -38,6 +38,8 @@ const clearPartnerSession = () => {
   setPartnerId(null);
 };
 
+
+
 const handleUserLogout = async () => {
   if (!user) {
     alert("First login as user");
