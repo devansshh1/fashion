@@ -6,7 +6,7 @@ const fp=require('../models/foodpartner.model');
 const { uploadImage } = require('../service/storage.service');
 const { v4: uuid } = require('uuid');
 async function registerUser(req,res){
-    console.log("BODY:", req.body); // ⭐ ADD THIS
+   
     const{name,email,password}=req.body;
     
         const existingUser=await userModel.findOne({email});
@@ -63,9 +63,6 @@ async function logoutUser(req,res){
     res.status(200).json({message:'Logout successful'});
 }
 async function registerFoodPartner(req, res) {
-
-  console.log("REQ.BODY:", req.body);
-  console.log("REQ.FILE:", req.file);
 
   const { name, email, password, InstagramHandle } = req.body;
 

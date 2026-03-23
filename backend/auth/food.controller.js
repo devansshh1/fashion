@@ -35,7 +35,6 @@ async function addFood(req, res) {
     });
 
   } catch (err) {
-    console.error("ADD FOOD ERROR:", err);
     res.status(500).json({ message: "Server error" });
   }
 }
@@ -106,7 +105,6 @@ async function saveFood(req, res) {
     });
 
   } catch (err) {
-    console.log("SAVE ERROR:", err);
     res.status(500).json({ message: "Server error" });
   }
 }
@@ -166,8 +164,7 @@ async function likeFood(req, res) {
     res.json({ liked: true });
 
   } catch (err) {
-    console.error("LIKE ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+        res.status(500).json({ message: "Server error" });
   }
     
 }
@@ -210,7 +207,7 @@ async function addComment(req, res) {
     });
 
   } catch (err) {
-    console.log(err);
+   
     res.status(500).json({
       message: "Server error"
     });
@@ -309,8 +306,6 @@ async function getAllFoods(req,res){
 
     const foods = await FoodModel.find();
 
-    console.log("FOODS FROM DB:", foods);
-
     res.json({foods});
 }
 
@@ -338,12 +333,12 @@ async function getTopPartners(req, res) {
 }
       
     ]);
-    console.log(topPartners);
+    
 
     res.json({ partners: topPartners });
 
   } catch (err) {
-    console.error("TOP PARTNERS ERROR:", err);
+
     res.status(500).json({ message: "Server error" });
   }
 }
@@ -358,7 +353,7 @@ async function getTopReels(req, res) {
     res.json({ reels: topReels });
 
   } catch (err) {
-    console.error("TOP REELS ERROR:", err);
+
     res.status(500).json({ message: "Server error" });
   }
 }

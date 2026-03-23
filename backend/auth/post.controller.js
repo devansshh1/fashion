@@ -29,7 +29,7 @@ async function uploadPost(req, res) {
     res.status(201).json({ message: "Post uploaded", post });
 
   } catch (err) {
-    console.error(err);
+    
     res.status(500).json({ message: "Server error" });
   }
 }
@@ -49,7 +49,7 @@ async function getAllPosts(req, res) {
     res.json({ posts });
 
   } catch (err) {
-    console.error(err);
+  
     res.status(500).json({ message: "Server error" });
   }
 }
@@ -71,7 +71,7 @@ async function getTopTrending(req, res) {
     res.json({ posts });
 
   } catch (err) {
-    console.error(err);
+    
     res.status(500).json({ message: "Server error" });
   }
 }
@@ -119,7 +119,7 @@ async function togglePostLike(req, res) {
     });
 
   } catch (err) {
-    console.error(err);
+    
     res.status(500).json({ message: "Server error" });
   }
 }
@@ -165,7 +165,7 @@ async function togglePostSave(req, res) {
     });
 
   } catch (err) {
-    console.error(err);
+   
     res.status(500).json({ message: "Server error" });
   }
 }
@@ -199,8 +199,7 @@ async function addPostComment(req, res) {
     res.status(201).json({ message: "Comment added" });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+        res.status(500).json({ message: "Server error" });
   }
 }
 
@@ -220,7 +219,7 @@ async function getPostComments(req, res) {
     res.json({ comments });
 
   } catch (err) {
-    console.error(err);
+  
     res.status(500).json({ message: "Server error" });
   }
 }
@@ -242,7 +241,7 @@ async function getSavedPosts(req, res) {
     res.json({ posts });
 
   } catch (err) {
-    console.error(err);
+    
     res.status(500).json({ message: "Server error" });
   }
 }

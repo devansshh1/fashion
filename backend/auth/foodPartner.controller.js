@@ -17,7 +17,6 @@ async function getPartnerProfile(req,res){
             });
         }
 
-        console.log("Requested Partner:", partnerId);
 
         // FETCH ALL POSTS
         const videos = await Food
@@ -41,10 +40,8 @@ async function getPartnerProfile(req,res){
             videos
         });
 
-        console.log("Videos Found:", videos.length);
-
     }catch(err){
-        console.error(err);
+       
         res.status(500).json({
             message:"Server error"
         });
@@ -109,7 +106,7 @@ async function updatePartnerProfile(req,res){
         });
 
     }catch(err){
-        console.error(err);
+       
         return res.status(500).json({
             message:"Server error"
         });

@@ -8,7 +8,7 @@ async function authFoodPartner(req, res, next){
 
     const token = req.cookies.partnerToken;
 
-    console.log("PARTNER COOKIE:", token);
+    
 
     if(!token){
         return res.status(401).json({message:'Unauthorized - No Token'});
@@ -29,7 +29,7 @@ async function authFoodPartner(req, res, next){
         next();
 
     }catch(err){
-        console.log("JWT ERROR:", err);
+      
         return res.status(401).json({message:'Unauthorized - Invalid Token'});
     }
 }
@@ -40,8 +40,6 @@ async function authFoodPartner(req, res, next){
 async function authUser(req,res,next){
 
     const token = req.cookies.userToken; // ⭐ DIFFERENT COOKIE
-
-    console.log("USER COOKIE:", token);
 
     if(!token){
         return res.status(401).json({message:'Unauthorized - No Token'});
@@ -62,7 +60,7 @@ async function authUser(req,res,next){
         next();
 
     }catch(err){
-        console.log("JWT ERROR:", err);
+      
         return res.status(401).json({message:'Unauthorized - Invalid Token'});
     }
 }
