@@ -1,6 +1,6 @@
-import axios from "axios";
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
+import API, { getAssetUrl } from "../api/API";
 
 function PostCard({ post, refresh }) {
   const { user } = useContext(AuthContext);
@@ -21,31 +21,21 @@ function PostCard({ post, refresh }) {
   const handleLike = async () => {
     if (!requireLogin()) return;
 
-    await axios.post(
-      `http://localhost:3000/api/posts/${post._id}/like`,
-      {},
-      { withCredentials: true }
-    );
+    await API.post(`/api/posts/${post._id}/like`);
     refresh();
   };
 
   const handleSave = async () => {
     if (!requireLogin()) return;
 
-    await axios.post(
-      `http://localhost:3000/api/posts/${post._id}/save`,
-      {},
-      { withCredentials: true }
-    );
+    await API.post(`/api/posts/${post._id}/save`);
     refresh();
   };
 
   const fetchComments = async () => {
     if (!requireLogin()) return;
 
-    const resp = await axios.get(
-      `http://localhost:3000/api/posts/${post._id}/comments`
-    );
+    const resp = await API.get(`/api/posts/${post._id}/comments`);
     setComments(resp.data.comments);
     setShowComments(true);
   };
@@ -54,11 +44,7 @@ function PostCard({ post, refresh }) {
     if (!requireLogin()) return;
     if (!newComment.trim()) return;
 
-    await axios.post(
-      `http://localhost:3000/api/posts/${post._id}/comment`,
-      { text: newComment },
-      { withCredentials: true }
-    );
+    await API.post(`/api/posts/${post._id}/comment`, { text: newComment });
 
     setNewComment("");
     fetchComments();
@@ -69,7 +55,7 @@ function PostCard({ post, refresh }) {
 
   return image.startsWith("http")
     ? image
-    : `http://localhost:3000${image}`;
+    : getAssetUrl(image);
 };
 
   return (

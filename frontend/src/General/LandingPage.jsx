@@ -2,7 +2,6 @@ import React,{useState,useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import "./landing.css";
 import { AuthContext } from "../context/AuthContext";
-import axios from "axios";
 import { useContext } from "react";
 import { useRef } from "react";
 import ReelFeed from "../components/ReelFeed";
@@ -12,6 +11,7 @@ import { BackgroundGradient } from "@/components/ui/background-gradient";
 import { BackgroundRippleEffect } from "@/components/ui/BackgroundRippleEffect";
 import { HeroHighlight, Highlight } from "@/components/ui/HeroHighlight";
 import { useLocation } from "react-router-dom";
+import API, { getAssetUrl } from "../api/API";
 function LandingPage() {
 const { user, loading, logout } = useContext(AuthContext);
 const [showMenu, setShowMenu] = useState(false);
@@ -25,10 +25,7 @@ const videoRefs = useRef([]);
     const location = useLocation();
     
 const getVideoUrl = (videoPath) => {
-  if (!videoPath) return "";
-  return videoPath.startsWith("http")
-    ? videoPath
-    : `http://localhost:3000${videoPath}`;
+  return getAssetUrl(videoPath);
 };
 
 const clearPartnerSession = () => {
@@ -56,11 +53,7 @@ const handleUserLogout = async () => {
 };
 const handlePartnerLogout = async() => {
    try {
-    await axios.post(
-      "http://localhost:3000/api/auth/partner/logout",
-      {},
-      { withCredentials: true }
-    );
+    await API.post("/api/auth/partner/logout");
 
     clearPartnerSession();
 
@@ -86,8 +79,8 @@ useEffect(() => {
   const fetchData = async () => {
     try {
       const [partnersRes, reelsRes] = await Promise.all([
-        axios.get("http://localhost:3000/api/food/top-partners"),
-        axios.get("http://localhost:3000/api/food/top-reels")
+        API.get("/api/food/top-partners"),
+        API.get("/api/food/top-reels")
       ]);
 
       setTopPartners(partnersRes.data.partners);
@@ -107,10 +100,7 @@ useEffect(() => {
 
         try{
 
-            const res = await axios.get(
-              "http://localhost:3000/api/partner/check-auth",
-                { withCredentials: true }
-            );
+            const res = await API.get("/api/partner/check-auth");
 
             if(res.data.loggedIn){
                 setIsPartnerLoggedIn(true);

@@ -1,19 +1,15 @@
 import React, { useContext, useEffect, useRef ,useState} from "react";
 import { FaHeart, FaRegCommentDots, FaBookmark } from "react-icons/fa";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import API, { getAssetUrl } from "../api/API";
 
 
 
 
 async function likeFood(foodId) {
   try {
-    const resp = await axios.post(
-      `http://localhost:3000/api/food/${foodId}`,   // better route
-      { contentType: "food" },                      // IMPORTANT
-      { withCredentials: true }
-    );
+    const resp = await API.post(`/api/food/${foodId}`, { contentType: "food" });
 
     return resp.data;
   } catch (err) {
@@ -25,11 +21,7 @@ async function likeFood(foodId) {
 
 async function saveFood(foodId) {
     try{
-        const resp = await axios.post(
-            `http://localhost:3000/api/food/${foodId}/save`,
-            {},
-            { withCredentials: true }
-        );
+        const resp = await API.post(`/api/food/${foodId}/save`);
         console.log("Saved food:", resp.data);
     }
     catch(err){
@@ -38,11 +30,7 @@ async function saveFood(foodId) {
 }
 async function commentOnFood(foodId, comment) {
     try{
-        const resp = await axios.post(
-            `http://localhost:3000/api/food/${foodId}/comment`,
-            { text: comment },
-            { withCredentials: true }
-        );
+        const resp = await API.post(`/api/food/${foodId}/comment`, { text: comment });
         console.log("Commented on food:", resp.data);
     }
     catch(err){
@@ -111,7 +99,7 @@ const requireLogin = () => {
 
  const videoSrc = videoData.video?.startsWith("http")
   ? videoData.video
-  : `http://localhost:3000${videoData.video}`;
+  : getAssetUrl(videoData.video);
 
     return (
         <div className="reel">
@@ -166,11 +154,7 @@ const requireLogin = () => {
     if (!requireLogin()) return;
 
     try {
-      const resp = await axios.post(
-        `http://localhost:3000/api/food/${videoData._id}/save`,
-        {},
-        { withCredentials: true }
-      );
+      const resp = await API.post(`/api/food/${videoData._id}/save`);
 
       setSaved(resp.data.saved);
       setSaves(resp.data.savesCount);
@@ -191,9 +175,7 @@ const requireLogin = () => {
 
     setShowComments(true);
 
-    const resp = await axios.get(
-      `http://localhost:3000/api/food/${videoData._id}/comments`
-    );
+    const resp = await API.get(`/api/food/${videoData._id}/comments`);
 
     setCommentList(resp.data);
   }}
@@ -226,17 +208,11 @@ const requireLogin = () => {
         onClick={async () => {
           if (!requireLogin()) return;
 
-          await axios.post(
-            `http://localhost:3000/api/food/${videoData._id}/comment`,
-            { text: newComment },
-            { withCredentials: true }
-          );
+          await API.post(`/api/food/${videoData._id}/comment`, { text: newComment });
 
           setNewComment("");
 
-          const resp = await axios.get(
-            `http://localhost:3000/api/food/${videoData._id}/comments`
-          );
+          const resp = await API.get(`/api/food/${videoData._id}/comments`);
 
           setCommentList(resp.data);
           setComments(resp.data.length);

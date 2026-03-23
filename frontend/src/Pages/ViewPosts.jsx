@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import PostCard from "../components/PostCard";
+import API from "../api/API";
 
 function ViewPosts() {
   const [posts, setPosts] = useState([]);
   const [category, setCategory] = useState("");
 
   const fetchPosts = async () => {
-    const resp = await axios.get(
-      `http://localhost:3000/api/posts?category=${category}`
-    );
+    const resp = await API.get(`/api/posts?category=${category}`);
     setPosts(resp.data.posts);
   };
 

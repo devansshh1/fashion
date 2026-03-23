@@ -1,8 +1,8 @@
 import AuthForm from "../components/AuthForm";
 import React from "react";
-import axios from "axios";    
 import Home from '../General/LandingPage';
 import { useNavigate } from "react-router-dom";   
+import API from "../api/API";
            
 function UserRegister(){
     const navigate = useNavigate(); // ⭐ ADD THIS
@@ -14,12 +14,12 @@ const handleSubmit = async (e) => {
         email: formData.get('email'),
         password: formData.get('password')
     };
-   const resp= await axios.post('http://localhost:3000/api/auth/user/register'
+   const resp= await API.post('/api/auth/user/register'
 ,{
         name: data.name,
         email: data.email,
         password: data.password 
-    }, { withCredentials: true })
+    })
     console.log("RESPONSE:", resp.data);
                 // ⭐ NAVIGATE TO HOME AFTER REGISTRATION
      navigate('/reels')

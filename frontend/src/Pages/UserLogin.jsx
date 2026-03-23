@@ -1,8 +1,8 @@
 import React, { useContext } from "react";
 import AuthForm from "../components/AuthForm";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import API from "../api/API";
 
 function UserLogin(){
 
@@ -14,13 +14,12 @@ function UserLogin(){
 
         const formData = new FormData(e.target);
 
-        const resp = await axios.post(
-            'http://localhost:3000/api/auth/user/login',
+        const resp = await API.post(
+            '/api/auth/user/login',
             {
                 email: formData.get('email'),
                 password: formData.get('password')
-            },
-            { withCredentials: true }
+            }
         );
 
         if (resp.status === 200) {

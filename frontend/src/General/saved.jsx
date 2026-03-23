@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import ReelCard from '../components/ReelCard'; // adjust path if needed
+import API from "../api/API";
 
 function Saved(){
 
@@ -13,10 +13,7 @@ function Saved(){
 
             try{
 
-                const res = await axios.get(
-                    "http://localhost:3000/api/food/saved",
-                    { withCredentials:true }
-                );
+                const res = await API.get("/api/food/saved");
 
                 setSavedFoods(res.data);
 

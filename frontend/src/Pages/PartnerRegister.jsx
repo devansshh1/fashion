@@ -1,10 +1,10 @@
 import React from "react";
 import AuthForm from "../components/AuthForm";
-import axios from "axios";
 import Home from '../General/LandingPage';
 import FoodHome from '../Pages/FoodPartnerHomePage';
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import API from "../api/API";
 
 function PartnerRegister(){
     const navigate = useNavigate();
@@ -77,11 +77,7 @@ const [error, setError] = useState("");
   setError("");
 
   try {
-    await axios.post(
-      "http://localhost:3000/api/auth/partner/register",
-      formData,
-      { withCredentials: true }
-    );
+    await API.post("/api/auth/partner/register", formData);
 
     navigate("/partner/login");
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import API from "../api/API";
+import API, { getAssetUrl } from "../api/API";
 
 function FoodProfile() {
   const { id } = useParams();
@@ -66,10 +66,7 @@ function FoodProfile() {
   }, [showMenu]);
 
   const getVideoUrl = (videoPath) => {
-    if (!videoPath) return "";
-    return videoPath.startsWith("http")
-      ? videoPath
-      : `http://localhost:3000${videoPath}`;
+    return getAssetUrl(videoPath);
   };
 
   const openEditModal = () => {
@@ -163,7 +160,7 @@ function FoodProfile() {
                 src={
                   foodPartner.image.startsWith("http")
                     ? foodPartner.image
-                    : `http://localhost:3000${foodPartner.image}`
+                    : getAssetUrl(foodPartner.image)
                 }
                 alt={foodPartner.name}
               />

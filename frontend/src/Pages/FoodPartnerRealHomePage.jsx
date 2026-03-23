@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../api/API";
 
 const styles = {
   page: {
@@ -111,11 +111,10 @@ function FoodPartnerRealHomePage() {
       setIsSubmitting(true);
       setStatusMessage("");
 
-      await axios.post("http://localhost:3000/api/food/add", formData, {
+      await API.post("/api/food/add", formData, {
         headers: {
           "Content-Type": "multipart/form-data"
-        },
-        withCredentials: true
+        }
       });
 
       alert("Video uploaded successfully");

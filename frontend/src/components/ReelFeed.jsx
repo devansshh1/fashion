@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import ReelCard from "./ReelCard";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "./BottomNav";
+import API from "../api/API";
 function ReelFeed() {
     const [foods, setFoods] = useState([]);
     const navigate = useNavigate();
@@ -12,10 +12,7 @@ function ReelFeed() {
         const fetchFoods = async () => {
             try {
 
-                const resp = await axios.get(
-                    "http://localhost:3000/api/food",
-                    { withCredentials: true }
-                );
+                const resp = await API.get("/api/food");
                 console.log(resp.data);
 
                 // Your API returns { foods: [...] }

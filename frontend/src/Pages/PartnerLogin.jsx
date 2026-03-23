@@ -1,8 +1,8 @@
 import React from "react";
 import AuthForm from "../components/AuthForm";
-import axios from "axios";  
 import Home from '../General/LandingPage';
 import { useNavigate } from "react-router-dom";
+import API from "../api/API";
 
 function PartnerLogin(){
     const navigate = useNavigate();
@@ -17,11 +17,11 @@ function PartnerLogin(){
         email: formData.get('email'),
         password: formData.get('password')
     };
-   const resp= await axios.post('http://localhost:3000/api/auth/partner/login'
+   const resp= await API.post('/api/auth/partner/login'
 ,{
         email: data.email,
         password: data.password 
-    }, { withCredentials: true })
+    })
     if (resp.status === 200) {
         localStorage.setItem("partnerId", resp.data._id);
         localStorage.setItem("isPartnerLoggedIn", "true");

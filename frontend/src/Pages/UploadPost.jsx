@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API from "../api/API";
 
 function UploadPost() {
   const navigate = useNavigate();
@@ -38,11 +38,7 @@ function UploadPost() {
   formData.append("image", image);
 
   try {
-    await axios.post(
-      "http://localhost:3000/api/posts/upload",
-      formData,
-      { withCredentials: true }
-    );
+    await API.post("/api/posts/upload", formData);
 
     alert("Post uploaded successfully 🚀");
     navigate("/category/view");

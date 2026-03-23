@@ -1,17 +1,12 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import PostCard from "../components/PostCard";
+import API from "../api/API";
 
 function SavedPosts() {
   const [posts, setPosts] = useState([]);
 
   const fetchSaved = async () => {
-    const resp = await axios.get(
-        
-
-      "http://localhost:3000/api/posts/saved",
-      { withCredentials: true }
-    );
+    const resp = await API.get("/api/posts/saved");
     setPosts(resp.data.posts);
   };
 

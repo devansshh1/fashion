@@ -1,16 +1,14 @@
 import { createContext, useState, useEffect } from "react";
-import axios from "axios";
 import React from "react";
+import API from "../api/API";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  axios.defaults.withCredentials = true;
-
   useEffect(() => {
-    axios.get("http://localhost:3000/api/auth/user/me")
+    API.get("/api/auth/user/me")
       .then(res => {
         setUser(res.data);
       })
@@ -23,7 +21,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const logout = async () => {
-    await axios.post("http://localhost:3000/api/auth/user/logout");
+    await API.post("/api/auth/user/logout");
     setUser(null);
   };
 

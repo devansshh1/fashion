@@ -5,6 +5,18 @@ const cookieParser = require('cookie-parser');
 const fp=require('../models/foodpartner.model');
 const { uploadImage } = require('../service/storage.service');
 const { v4: uuid } = require('uuid');
+const isProduction = process.env.NODE_ENV === 'production';
+const cookieOptions = {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000
+};
+const clearCookieOptions = {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax'
+};
 async function registerUser(req,res){
    
     const{name,email,password}=req.body;
@@ -20,11 +32,7 @@ async function registerUser(req,res){
             password:hashedPassword
         });
         const token=jwt.sign({id:newuser._id},process.env.JWT_SECRET,{ expiresIn: "7d" });
-res.cookie("userToken", token,{
-    httpOnly:true,
-    secure:false,
-    sameSite:"lax",maxAge: 7 * 24 * 60 * 60 * 1000
-});
+res.cookie("userToken", token, cookieOptions);
 
 
 
@@ -45,21 +53,13 @@ async  function loginUser(req,res){
         return res.status(400).json({message:'Invalid credentials'});
     }
     const token=jwt.sign({id:existingUser._id},process.env.JWT_SECRET,{ expiresIn: "7d" });
-   res.cookie("userToken", token,{
-    httpOnly:true,
-    secure:false,
-    sameSite:"lax",maxAge: 7 * 24 * 60 * 60 * 1000
-});
+   res.cookie("userToken", token, cookieOptions);
 
 
     res.status(200).json({message:'Login successful',_id:existingUser._id,name:existingUser.name,email:existingUser.email});
 }
 async function logoutUser(req,res){
-    res.clearCookie("userToken", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: false
-    });
+    res.clearCookie("userToken", clearCookieOptions);
     res.status(200).json({message:'Logout successful'});
 }
 async function registerFoodPartner(req, res) {
@@ -153,12 +153,7 @@ if (!allowedTypes.includes(req.file.mimetype)) {
     { expiresIn: "7d" }
   );
 
-  res.cookie("partnerToken", token, {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000
-  });
+  res.cookie("partnerToken", token, cookieOptions);
 
   res.status(201).json({
     message: "Model registered successfully",
@@ -179,11 +174,7 @@ async function loginFoodPartner(req,res){
         return res.status(400).json({message:'Invalid credentials'});
     }
     const token=jwt.sign({id:existingPartner._id},process.env.JWT_SECRET,{ expiresIn: "7d" });
-   res.cookie("partnerToken", token, {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax",maxAge: 7 * 24 * 60 * 60 * 1000
-});
+   res.cookie("partnerToken", token, cookieOptions);
 
 
 
@@ -191,11 +182,7 @@ async function loginFoodPartner(req,res){
     
 }
 async function logoutFoodPartner(req,res){
-  res.clearCookie("partnerToken", {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax"
-  });
+  res.clearCookie("partnerToken", clearCookieOptions);
 
 
     res.status(200).json({message:'Logout successful'});
