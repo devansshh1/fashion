@@ -193,17 +193,19 @@ useEffect(() => {
       {!user ? (
             <>
                 <button
-                    className="login-btn "
+                    className="login-btn nav-auth-btn"
                     onClick={() => navigate("/user/login")}
                 >
-                   Viewer Login
+                   <span className="nav-auth-btn__label">Viewer</span>
+                   <span className="nav-auth-btn__label">Login</span>
                 </button>
 
                 <button
-                    className="register-btn"
+                    className="register-btn nav-auth-btn"
                     onClick={() => navigate("/user/register")}
                 >
-                  Viewer  Register
+                  <span className="nav-auth-btn__label">Viewer</span>
+                  <span className="nav-auth-btn__label">Register</span>
                 </button>
             </>
         ) : (
