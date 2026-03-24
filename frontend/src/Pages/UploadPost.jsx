@@ -44,9 +44,18 @@ function UploadPost() {
     navigate("/category/view");
 
   } catch (err) {
-    // 🔥 Show backend error properly
-    if (err.response && err.response.data.message) {
-      alert(err.response.data.message);
+    const status = err.response?.status;
+    const message = err.response?.data?.message;
+
+    if (
+      status === 401 ||
+      message === "Unauthorized - No Token" ||
+      message === "Unauthorized - Invalid Token" ||
+      message === "Unauthorized - No User"
+    ) {
+      navigate("/user/login", { replace: true });
+    } else if (message) {
+      alert(message);
     } else {
       alert("Something went wrong. Please try again.");
     }

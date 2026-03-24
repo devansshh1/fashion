@@ -12,9 +12,12 @@ import { BackgroundRippleEffect } from "@/components/ui/BackgroundRippleEffect";
 import { HeroHighlight, Highlight } from "@/components/ui/HeroHighlight";
 import { useLocation } from "react-router-dom";
 import API, { getAssetUrl } from "../api/API";
+import StartupLoader from "../components/StartupLoader";
 function LandingPage() {
 const { user, loading, logout } = useContext(AuthContext);
 const [showMenu, setShowMenu] = useState(false);
+const [initialFeedLoading, setInitialFeedLoading] = useState(true);
+const [partnerSessionLoading, setPartnerSessionLoading] = useState(true);
 
 const videoRefs = useRef([]);
     const navigate = useNavigate();
@@ -88,6 +91,8 @@ useEffect(() => {
 
     } catch (err) {
       console.error(err);
+    } finally {
+      setInitialFeedLoading(false);
     }
   };
 
@@ -120,6 +125,8 @@ useEffect(() => {
           }
 
           clearPartnerSession();
+        } finally {
+          setPartnerSessionLoading(false);
         }
     }
 
@@ -168,8 +175,8 @@ useEffect(() => {
 
 }, [topReels]);
 
-    if(loading) {
-    return <div className="loading">Loading...</div>;
+    if (loading || initialFeedLoading || partnerSessionLoading) {
+    return <StartupLoader />;
 }
 
     return (
@@ -189,14 +196,14 @@ useEffect(() => {
                     className="login-btn "
                     onClick={() => navigate("/user/login")}
                 >
-                    Login
+                   Viewer Login
                 </button>
 
                 <button
                     className="register-btn"
                     onClick={() => navigate("/user/register")}
                 >
-                    Register
+                  Viewer  Register
                 </button>
             </>
         ) : (
@@ -354,7 +361,7 @@ className="register-btn font-satoshi landing-cta-btn"
 style={{ background: "#8d60a8" }}
 onClick={() => navigate("/partner/register")}
 >
-Start Your Profile
+Creator Sign Up
 </button>
 
 <button
