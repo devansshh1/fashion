@@ -95,30 +95,32 @@ function PostCard({ post, refresh }) {
       </div>
 
       {/* INPUT ROW */}
-      <div className="comment-input-row">
-        <input
-          className="comment-input"
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Write a comment..."
-        />
+      {/* INPUT */}
+<div className="comment-input-row">
+  <input
+    className="comment-input"
+    value={newComment}
+    onChange={(e) => setNewComment(e.target.value)}
+    placeholder="Write a comment..."
+  />
+</div>
 
-        <button
-          className="comment-post-btn"
-          onClick={postComment}
-        >
-          Post
-        </button>
-      </div>
+{/* ACTION BUTTONS */}
+<div className="comment-actions">
+  <button
+    className="comment-post-btn"
+    onClick={postComment}
+  >
+    Post
+  </button>
 
-      {/* CLOSE */}
-      <button
-        className="comment-close-btn"
-        onClick={() => setShowComments(false)}
-      >
-        Close
-      </button>
-
+  <button
+    className="comment-close-btn"
+    onClick={() => setShowComments(false)}
+  >
+    Close
+  </button>
+</div>
     </div>
   </div>
 )}

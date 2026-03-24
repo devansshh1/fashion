@@ -5,7 +5,7 @@ const partnerController = require('../auth/foodPartner.controller');
 const router = express.Router();
 
 const authMiddleware = require('../middlewares/auth.middleware');
-const isProduction = process.env.NODE_ENV === 'production';
+const { clearCookieOptions } = require('../src/cookieOptions');
 
 router.get("/check-auth", authMiddleware.authFoodPartner, (req, res) => {
 
@@ -20,11 +20,7 @@ router.get("/check-auth", authMiddleware.authFoodPartner, (req, res) => {
 });
 
 router.post("/logout", (req, res) => {
-  res.clearCookie("partnerToken", {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax"
-  });
+  res.clearCookie("partnerToken", clearCookieOptions);
   res.json({ message: "Logged out" });
 });
 router.get('/:id/profile', partnerController.getPartnerProfile);

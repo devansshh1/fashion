@@ -192,38 +192,49 @@ const requireLogin = () => {
 
       <h3>Comments</h3>
 
-      {commentList.map(c => (
-        <div key={c._id}>
-          <strong>{c.user.name}</strong>: {c.text}
-        </div>
-      ))}
+      <div className="comment-list">
+        {commentList.map(c => (
+          <div key={c._id} className="comment-item">
+            <strong>{c.user.name}</strong>: {c.text}
+          </div>
+        ))}
+      </div>
 
-      <input
-        value={newComment}
-        onChange={(e) => setNewComment(e.target.value)}
-        placeholder="Write comment..."
-      />
+      <div className="comment-input-row">
+        <input
+          className="comment-input"
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          placeholder="Write comment..."
+        />
+      </div>
 
-      <button
-        onClick={async () => {
-          if (!requireLogin()) return;
+      <div className="comment-actions">
+        <button
+          className="comment-post-btn"
+          onClick={async () => {
+            if (!requireLogin()) return;
 
-          await API.post(`/api/food/${videoData._id}/comment`, { text: newComment });
+            await API.post(`/api/food/${videoData._id}/comment`, { text: newComment });
 
-          setNewComment("");
+            setNewComment("");
 
-          const resp = await API.get(`/api/food/${videoData._id}/comments`);
+            const resp = await API.get(`/api/food/${videoData._id}/comments`);
 
-          setCommentList(resp.data);
-          setComments(resp.data.length);
-        }}
-      >
-        Post
-      </button>
+            setCommentList(resp.data);
+            setComments(resp.data.length);
+          }}
+        >
+          Post
+        </button>
 
-      <button onClick={() => setShowComments(false)}>
-        Close
-      </button>
+        <button
+          className="comment-close-btn"
+          onClick={() => setShowComments(false)}
+        >
+          Close
+        </button>
+      </div>
 
     </div>
   </div>

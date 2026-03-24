@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/API";
 
@@ -79,6 +79,45 @@ function FoodPartnerRealHomePage() {
   const [title, setTitle] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+  const [authChecking, setAuthChecking] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const verifyPartnerSession = async () => {
+      try {
+        const res = await API.get("/api/partner/check-auth");
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (!res.data.loggedIn || !res.data.partner?.id) {
+          throw new Error("Partner session missing");
+        }
+
+        localStorage.setItem("partnerId", res.data.partner.id);
+        localStorage.setItem("isPartnerLoggedIn", "true");
+        setAuthChecking(false);
+      } catch (err) {
+        if (!isMounted) {
+          return;
+        }
+
+        localStorage.removeItem("partnerId");
+        localStorage.removeItem("isPartnerLoggedIn");
+        setStatusMessage("Please log in as a model before uploading a reel.");
+        setAuthChecking(false);
+        navigate("/partner/login", { replace: true });
+      }
+    };
+
+    verifyPartnerSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [navigate]);
 
   const handleVideoChange = (e) => {
     const file = e.target.files[0];
@@ -92,6 +131,11 @@ function FoodPartnerRealHomePage() {
 
   const onsubmit = async (e) => {
     e.preventDefault();
+
+    if (authChecking) {
+      setStatusMessage("Checking your model session. Please wait.");
+      return;
+    }
 
     if (isSubmitting) {
       setStatusMessage("Please wait, your reel is still uploading.");
@@ -121,8 +165,19 @@ function FoodPartnerRealHomePage() {
       navigate("/");
     } catch (err) {
       console.error(err);
-      alert("Upload failed");
-      setStatusMessage("Upload failed. Please try again.");
+
+      if (err.response?.status === 401) {
+        localStorage.removeItem("partnerId");
+        localStorage.removeItem("isPartnerLoggedIn");
+        setStatusMessage("Your model session expired. Please log in again.");
+        navigate("/partner/login", { replace: true });
+        return;
+      }
+
+      const message =
+        err.response?.data?.message || "Upload failed. Please try again.";
+      alert(message);
+      setStatusMessage(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -133,9 +188,7 @@ function FoodPartnerRealHomePage() {
       <div style={styles.card}>
         <h1 style={styles.heading}>Upload Reel</h1>
 
-        {previewURL && (
-          <video src={previewURL} controls style={styles.video} />
-        )}
+        {previewURL && <video src={previewURL} controls style={styles.video} />}
 
         <input
           type="file"
@@ -165,10 +218,7 @@ function FoodPartnerRealHomePage() {
 
         {statusMessage && <p style={styles.status}>{statusMessage}</p>}
 
-        <button
-          onClick={() => navigate("/")}
-          style={styles.secondaryButton}
-        >
+        <button onClick={() => navigate("/")} style={styles.secondaryButton}>
           Back to Home
         </button>
       </div>

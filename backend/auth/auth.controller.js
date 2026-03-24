@@ -5,30 +5,20 @@ const cookieParser = require('cookie-parser');
 const fp=require('../models/foodpartner.model');
 const { uploadImage } = require('../service/storage.service');
 const { v4: uuid } = require('uuid');
-const isProduction = process.env.NODE_ENV === 'production';
-const cookieOptions = {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000
-};
-const clearCookieOptions = {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax'
-};
+const { cookieOptions, clearCookieOptions } = require('../src/cookieOptions');
 async function registerUser(req,res){
    
     const{name,email,password}=req.body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
     
-        const existingUser=await userModel.findOne({email});
+        const existingUser=await userModel.findOne({email: normalizedEmail});
         if(existingUser){
             return res.status(400).json({message:'User already exists'});
         }
         const hashedPassword=await pass.hash(password,10);
         const newuser=await userModel.create({
             name,
-            email,
+            email: normalizedEmail,
             password:hashedPassword
         });
         const token=jwt.sign({id:newuser._id},process.env.JWT_SECRET,{ expiresIn: "7d" });
@@ -44,7 +34,8 @@ res.cookie("userToken", token, cookieOptions);
 async  function loginUser(req,res){
     //login logic here
     const {email,password}=req.body;
-    const existingUser=await userModel.findOne({email});
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const existingUser=await userModel.findOne({email: normalizedEmail});
     if(!existingUser){
         return res.status(400).json({message:'Invalid credentials'});
     }
@@ -65,6 +56,7 @@ async function logoutUser(req,res){
 async function registerFoodPartner(req, res) {
 
   const { name, email, password, InstagramHandle } = req.body;
+  const normalizedEmail = String(email || '').trim().toLowerCase();
 
 if (!req.file) {
     return res.status(400).json({
@@ -79,7 +71,7 @@ if (!req.file) {
 }
 const emailRegex = /^[a-zA-Z0-9._%+-]+@vitbhopal\.ac\.in$/;
 
-if (!emailRegex.test(email)) {
+if (!emailRegex.test(normalizedEmail)) {
   return res.status(400).json({
     message: "Enter a valid VIT Bhopal email"
   });
@@ -121,7 +113,7 @@ if (!allowedTypes.includes(req.file.mimetype)) {
 }
 
   // check existing partner
-  const existingPartner = await fp.findOne({ email });
+  const existingPartner = await fp.findOne({ email: normalizedEmail });
 
   if (existingPartner) {
     return res.status(400).json({
@@ -141,7 +133,7 @@ if (!allowedTypes.includes(req.file.mimetype)) {
   // create partner
   const newPartner = await fp.create({
     name,
-    email,
+    email: normalizedEmail,
     password: hashedPassword,
     InstagramHandle: cleanHandle,
     image: uploadedImage.url
@@ -165,7 +157,8 @@ if (!allowedTypes.includes(req.file.mimetype)) {
 async function loginFoodPartner(req,res){
     //food partner login logic here
       const {email,password}=req.body;
-    const existingPartner=await fp.findOne({email});
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const existingPartner=await fp.findOne({email: normalizedEmail});
     if(!existingPartner){
         return res.status(400).json({message:'Invalid credentials'});
     }
