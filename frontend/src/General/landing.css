@@ -39,6 +39,16 @@ height:90%;
 
 }
 
+.nav-user-actions{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:16px;
+    width:100%;
+    margin-left:auto;
+    padding-left:28px;
+}
+
 .logo{
    font-weight:bold;
     font-size:clamp(2rem, 2vw + 1.35rem, 2.5rem);
@@ -80,6 +90,10 @@ height:90%;
 .nav-auth-btn__label{
     font-size:1.18rem;
     font-weight:700;
+}
+
+.nav-menu-trigger{
+    margin-left:4px;
 }
 
 .register-btn{
@@ -224,6 +238,13 @@ height:90%;
 
   .nav-buttons{
     display:contents;
+  }
+
+  .nav-user-actions{
+    grid-column:2 / 4;
+    justify-self:end;
+    width:auto;
+    padding-left:20px;
   }
 
   .nav-buttons button{

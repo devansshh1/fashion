@@ -209,11 +209,11 @@ useEffect(() => {
                 </button>
             </>
         ) : (
-            <div className="flex items-center gap-4">
+            <div className="nav-user-actions">
   <BackgroundGradient
-    className="rounded-xl px-8 py-4 bg-black text-white font-semibold cursor-pointer ">
+    className="rounded-xl flex justify-end bg-black text-white font-semibold cursor-pointer  ">
           <button
-            className="bg-transparent text-white font-semibold cursor-pointer " 
+            className="bg-transparent text-white font-semibold cursor-pointer  " 
             onClick={() => navigate("/reels")}
           >
             Model Drops
@@ -221,7 +221,7 @@ useEffect(() => {
 </BackgroundGradient>  
           <button
     onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
-    className="text-white text-2xl px-2"
+    className="nav-menu-trigger text-white text-2xl px-2"
   >
     ⋮
   </button>
