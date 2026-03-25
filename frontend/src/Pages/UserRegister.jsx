@@ -1,44 +1,51 @@
+import React, { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AuthForm from "../components/AuthForm";
-import React from "react";
-import Home from '../General/LandingPage';
-import { useNavigate } from "react-router-dom";   
 import API from "../api/API";
-           
-function UserRegister(){
-    const navigate = useNavigate(); // ⭐ ADD THIS
-const handleSubmit = async (e) => {
+import { AuthContext } from "../context/AuthContext";
+
+function UserRegister() {
+  const navigate = useNavigate();
+  const { setUser } = useContext(AuthContext);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     const formData = new FormData(e.target);
-    const data = {
-        name: formData.get('name'),
-        email: formData.get('email'),
-        password: formData.get('password')
-    };
-   const resp= await API.post('/api/auth/user/register'
-,{
-        name: data.name,
-        email: data.email,
-        password: data.password 
-    })
-    console.log("RESPONSE:", resp.data);
-                // ⭐ NAVIGATE TO HOME AFTER REGISTRATION
-     navigate('/reels')
-}
-    const fields = [
-        {name:"name", type:"text", placeholder:"Full Name"},
-        {name:"email", type:"email", placeholder:"Email"},
-        {name:"password", type:"password", placeholder:"Password"}
+    setError("");
 
-    ];
+    try {
+      const resp = await API.post("/api/auth/user/register", {
+        name: formData.get("name"),
+        email: formData.get("email"),
+        password: formData.get("password")
+      });
 
-    return (
-        <AuthForm
-            title="User Register"
-            fields={fields}
-            buttonText="Create Account"
-            onSubmit={handleSubmit}
-        />
-    );
+      setUser(resp.data);
+      navigate("/");
+    } catch (err) {
+      const message =
+        err?.response?.data?.message || "Unable to register right now";
+      setError(message);
+    }
+  };
+
+  const fields = [
+    { name: "name", type: "text", placeholder: "Full Name" },
+    { name: "email", type: "email", placeholder: "Email" },
+    { name: "password", type: "password", placeholder: "Password" }
+  ];
+
+  return (
+    <AuthForm
+      title="User Register"
+      fields={fields}
+      buttonText="Create Account"
+      onSubmit={handleSubmit}
+      error={error}
+    />
+  );
 }
 
 export default UserRegister;

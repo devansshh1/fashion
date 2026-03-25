@@ -10,7 +10,7 @@ function AuthForm({title, fields, buttonText, onSubmit, error}) {
                 <form onSubmit={onSubmit} encType="multipart/form-data">
                     {fields.map((field, index)=>(
                        field.type === "file" ? (
-  <label className="file-upload text-black font-bold">
+  <label key={field.name || index} className="file-upload text-black font-bold">
     Upload Profile Photo
     <input
       type="file"
@@ -21,6 +21,7 @@ function AuthForm({title, fields, buttonText, onSubmit, error}) {
   </label>
 ) : (
   <input
+    key={field.name || index}
     type={field.type}
     name={field.name}
     placeholder={field.placeholder}

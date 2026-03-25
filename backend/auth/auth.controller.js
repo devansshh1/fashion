@@ -13,7 +13,7 @@ async function registerUser(req,res){
     
         const existingUser=await userModel.findOne({email: normalizedEmail});
         if(existingUser){
-            return res.status(400).json({message:'User already exists'});
+            return res.status(400).json({message:'Email already exists'});
         }
         const hashedPassword=await pass.hash(password,10);
         const newuser=await userModel.create({
