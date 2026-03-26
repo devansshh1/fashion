@@ -11,7 +11,7 @@ async function authFoodPartner(req, res, next){
     
 
     if(!token){
-        return res.status(401).json({message:'Please login as model first'});
+        return res.status(401).json({message:'Please register as model first'});
     }
 
     try{
@@ -21,7 +21,7 @@ async function authFoodPartner(req, res, next){
         const foodPartner = await FoodPartner.findById(decoded.id);
 
         if(!foodPartner){
-            return res.status(401).json({message:'Please login as model first'});
+            return res.status(401).json({message:'Please register as model first'});
         }
 
         req.foodPartner = foodPartner;
@@ -30,7 +30,7 @@ async function authFoodPartner(req, res, next){
 
     }catch(err){
       
-        return res.status(401).json({message:'Please login as model first'});
+        return res.status(401).json({message:'Please register as model first'});
     }
 }
 
@@ -42,7 +42,7 @@ async function authUser(req,res,next){
     const token = req.cookies.userToken; // ⭐ DIFFERENT COOKIE
 
     if(!token){
-        return res.status(401).json({message:'Please login first'});
+        return res.status(401).json({message:'Please register first'});
     }
 
     try{
@@ -52,7 +52,7 @@ async function authUser(req,res,next){
         const user = await User.findById(decoded.id);
 
         if(!user){
-            return res.status(401).json({message:'Please login first'});
+            return res.status(401).json({message:'Please register first'});
         }
 
         req.user = user;
@@ -61,7 +61,7 @@ async function authUser(req,res,next){
 
     }catch(err){
       
-        return res.status(401).json({message:'Please login first'});
+        return res.status(401).json({message:'Please register first'});
     }
 }
 

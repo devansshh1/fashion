@@ -117,7 +117,7 @@ if (!allowedTypes.includes(req.file.mimetype)) {
 
   if (existingPartner) {
     return res.status(400).json({
-      message: "Model already exists"
+      message: "Email already exists"
     });
   }
 

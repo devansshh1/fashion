@@ -342,12 +342,12 @@ async function getTopPartners(req, res) {
     res.status(500).json({ message: "Server error" });
   }
 }
-// ⭐ Get Top 3 Most Liked Reels
+// ⭐ Get Top 5 Most Liked Reels
 async function getTopReels(req, res) {
   try {
     const topReels = await FoodModel.find()
       .sort({ likesCount: -1 })
-      .limit(3)
+      .limit(5)
       .populate("foodPartnerId", "name image");
 
     res.json({ reels: topReels });

@@ -27,8 +27,8 @@ function UploadPost() {
   }
 
   // ✅ File size validation (5MB example)
-  if (image.size > 4 * 1024 * 1024) {
-    alert("Image size must be less than 4MB.");
+  if (image.size > 11 * 1024 * 1024) {
+    alert("Image size must be less than 11MB.");
     return;
   }
 

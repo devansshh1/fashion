@@ -13,6 +13,9 @@ import { HeroHighlight, Highlight } from "@/components/ui/HeroHighlight";
 import { useLocation } from "react-router-dom";
 import API, { getAssetUrl } from "../api/API";
 import StartupLoader from "../components/StartupLoader";
+
+const STARTUP_REQUEST_TIMEOUT = 10000;
+
 function LandingPage() {
 const { user, loading, logout } = useContext(AuthContext);
 const [showMenu, setShowMenu] = useState(false);
@@ -66,28 +69,27 @@ const handlePartnerLogout = async() => {
     alert("Unable to logout model");
   }
 };
-
-const handleCategoryClick = (category) => {
-  const choice = window.confirm(
-    `Do you want to VIEW posts in "${category}"?\n\nClick Cancel to UPLOAD your post.`
-  );
-
-  if (choice) {
-    navigate(`/category/${category}`);
-  } else {
-    navigate(`/upload-post/${category}`);
-  }
-}
 useEffect(() => {
   const fetchData = async () => {
     try {
-      const [partnersRes, reelsRes] = await Promise.all([
-        API.get("/api/food/top-partners"),
-        API.get("/api/food/top-reels")
+      const [partnersRes, reelsRes] = await Promise.allSettled([
+        API.get("/api/food/top-partners", { timeout: STARTUP_REQUEST_TIMEOUT }),
+        API.get("/api/food/top-reels", { timeout: STARTUP_REQUEST_TIMEOUT })
       ]);
 
-      setTopPartners(partnersRes.data.partners);
-      setTopReels(reelsRes.data.reels);
+      if (partnersRes.status === "fulfilled") {
+        setTopPartners(partnersRes.value.data.partners);
+      } else {
+        setTopPartners([]);
+        console.error("Top partners request timed out or failed", partnersRes.reason);
+      }
+
+      if (reelsRes.status === "fulfilled") {
+        setTopReels(reelsRes.value.data.reels);
+      } else {
+        setTopReels([]);
+        console.error("Top reels request timed out or failed", reelsRes.reason);
+      }
 
     } catch (err) {
       console.error(err);
@@ -105,7 +107,9 @@ useEffect(() => {
 
         try{
 
-            const res = await API.get("/api/partner/check-auth");
+            const res = await API.get("/api/partner/check-auth", {
+              timeout: STARTUP_REQUEST_TIMEOUT
+            });
 
             if(res.data.loggedIn){
                 setIsPartnerLoggedIn(true);
@@ -216,7 +220,7 @@ useEffect(() => {
             className="bg-transparent text-white font-semibold cursor-pointer  " 
             onClick={() => navigate("/reels")}
           >
-            Model Drops
+            Model Reels
           </button>
 </BackgroundGradient>  
           <button
@@ -275,11 +279,11 @@ Where Style Goes Viral
 
             </div>
           
-
+ <h2 className=" tt font-satoshi tracking-tight  flex  justify-center ">Today's Top Creators</h2>
 
             {/* PREVIEW SECTION */}
       <div className="top-partners ">
-
+ 
   {topPartners.map((partner, index) => (
     
     <div key={partner._id} className="partner-circle ">
@@ -296,10 +300,10 @@ Where Style Goes Viral
   ))}
 </div>
 
-{/* 🔥 TOP 3 REELS SECTION */}
+{/* 🔥 TOP 5 REELS SECTION */}
 <div className="top-reels">
 
-  <h2 className="section-title font-satoshi tracking-tight "> Today's Top Fit Checks</h2>
+  <h2 className="section-title font-satoshi tracking-tight  "> Today's Top Fit Checks</h2>
 
   <div className="reels-container">
     {topReels.map((reel, index) => (
