@@ -1,5 +1,6 @@
 const Food = require('../models/food.model');
 const FoodPartner = require('../models/foodpartner.model');
+const { uploadImage } = require('../service/storage.service');
 
 async function getPartnerProfile(req,res){
 
@@ -88,6 +89,23 @@ async function updatePartnerProfile(req,res){
             updates.InstagramHandle = cleanHandle;
         }
 
+        if(req.file){
+            const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+            if(!allowedTypes.includes(req.file.mimetype)){
+                return res.status(400).json({
+                    message:"Only JPG, PNG, WEBP images allowed"
+                });
+            }
+
+            const uploadedImage = await uploadImage(
+                req.file.buffer,
+                req.file.originalname
+            );
+
+            updates.image = uploadedImage.url;
+        }
+
         if(!Object.keys(updates).length){
             return res.status(400).json({
                 message:"No valid profile fields provided"
@@ -106,7 +124,7 @@ async function updatePartnerProfile(req,res){
         });
 
     }catch(err){
-       
+        console.error("Failed to update partner profile:", err);
         return res.status(500).json({
             message:"Server error"
         });

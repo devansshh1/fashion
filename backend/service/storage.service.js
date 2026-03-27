@@ -8,43 +8,51 @@ const imagekit = new ImageKit({
 });
 
 exports.uploadImage = async (buffer, originalName) => {
-  const extension = originalName.split(".").pop();
+  const extension = (originalName.split(".").pop() || "jpg").toLowerCase();
+  const safeOriginalName = originalName || `upload.${extension}`;
+  const maxPixels = 24_000_000;
 
-  // 📏 Get original dimensions
-  const metadata = await sharp(buffer).metadata();
+  try {
+    const metadata = await sharp(buffer).metadata();
+    const width = metadata.width;
+    const height = metadata.height;
+    const currentPixels =
+      typeof width === "number" && typeof height === "number"
+        ? width * height
+        : 0;
 
-  const width = metadata.width;
-  const height = metadata.height;
+    let finalBuffer;
 
-  console.log("ORIGINAL SIZE:", width, "x", height);
+    if (currentPixels > maxPixels) {
+      const scaleFactor = Math.sqrt(maxPixels / currentPixels);
+      const newWidth = Math.floor(width * scaleFactor);
+      const newHeight = Math.floor(height * scaleFactor);
 
-  const MAX_PIXELS = 24_000_000; // slightly below 25MP
-  const currentPixels = width * height;
+      finalBuffer = await sharp(buffer)
+        .resize(newWidth, newHeight)
+        .jpeg({ quality: 85 })
+        .toBuffer();
+    } else {
+      finalBuffer = await sharp(buffer)
+        .jpeg({ quality: 90 })
+        .toBuffer();
+    }
 
-  let finalBuffer;
+    return await imagekit.upload({
+      file: finalBuffer,
+      fileName: `${Date.now()}.jpg`
+    });
+  } catch (error) {
+    console.error(
+      "Image processing failed, uploading original file instead:",
+      error.message
+    );
 
-  if (currentPixels > MAX_PIXELS) {
-    const scaleFactor = Math.sqrt(MAX_PIXELS / currentPixels);
-
-    const newWidth = Math.floor(width * scaleFactor);
-    const newHeight = Math.floor(height * scaleFactor);
-
-    console.log("RESIZING TO:", newWidth, "x", newHeight);
-
-    finalBuffer = await sharp(buffer)
-      .resize(newWidth, newHeight)
-      .jpeg({ quality: 85 })
-      .toBuffer();
-  } else {
-    finalBuffer = await sharp(buffer)
-      .jpeg({ quality: 90 })
-      .toBuffer();
+    return await imagekit.upload({
+      file: buffer,
+      fileName: `${Date.now()}-${safeOriginalName}`
+    });
   }
-
-  return await imagekit.upload({
-    file: finalBuffer,
-    fileName: `${Date.now()}.${extension}`
-  });
 };
 
 exports.uploadVideo = async (buffer, originalName) => {
@@ -53,7 +61,7 @@ exports.uploadVideo = async (buffer, originalName) => {
   return await imagekit.upload({
     file: buffer,
     fileName: `${Date.now()}.${extension}`,
-    folder: "/videos", // Optional: to organize files in ImageKit
+    folder: "/videos",
     useUniqueFileName: true,
     tags: ["model-video", "reels"],
     isPrivateFile: false,

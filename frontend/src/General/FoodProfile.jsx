@@ -12,6 +12,8 @@ function FoodProfile() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editName, setEditName] = useState("");
   const [editInstagramHandle, setEditInstagramHandle] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState("");
   const [saveError, setSaveError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const videoRef = useRef();
@@ -65,20 +67,70 @@ function FoodProfile() {
     return () => window.removeEventListener("click", handleOutsideClick);
   }, [showMenu]);
 
+  useEffect(() => {
+    return () => {
+      if (previewImage?.startsWith("blob:")) {
+        URL.revokeObjectURL(previewImage);
+      }
+    };
+  }, [previewImage]);
+
   const getVideoUrl = (videoPath) => {
     return getAssetUrl(videoPath);
+  };
+
+  const getProfileImageUrl = (imagePath) => {
+    if (!imagePath) return "";
+    return imagePath.startsWith("http") ? imagePath : getAssetUrl(imagePath);
   };
 
   const openEditModal = () => {
     setEditName(foodPartner?.name || "");
     setEditInstagramHandle(foodPartner?.InstagramHandle || "");
+    setSelectedImage(null);
+    setPreviewImage(foodPartner?.image ? getProfileImageUrl(foodPartner.image) : "");
     setSaveError("");
     setShowMenu(false);
     setShowEditModal(true);
   };
 
   const closeEditModal = () => {
+    if (previewImage?.startsWith("blob:")) {
+      URL.revokeObjectURL(previewImage);
+    }
     setShowEditModal(false);
+    setSelectedImage(null);
+    setPreviewImage("");
+    setSaveError("");
+  };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+    if (!allowedTypes.includes(file.type)) {
+      setSaveError("Only JPG, PNG or WEBP images are allowed.");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setSaveError("Profile photo must be 2MB or smaller.");
+      event.target.value = "";
+      return;
+    }
+
+    if (previewImage?.startsWith("blob:")) {
+      URL.revokeObjectURL(previewImage);
+    }
+
+    setSelectedImage(file);
+    setPreviewImage(URL.createObjectURL(file));
     setSaveError("");
   };
 
@@ -100,11 +152,15 @@ function FoodProfile() {
     try {
       setIsSaving(true);
       setSaveError("");
+      const formData = new FormData();
+      formData.append("name", trimmedName);
+      formData.append("InstagramHandle", cleanHandle);
 
-      const res = await API.patch(`/api/partner/${id}`, {
-        name: trimmedName,
-        InstagramHandle: cleanHandle,
-      });
+      if (selectedImage) {
+        formData.append("image", selectedImage);
+      }
+
+      const res = await API.patch(`/api/partner/${id}`, formData);
 
       setFoodPartner((prev) => ({
         ...prev,
@@ -157,11 +213,7 @@ function FoodProfile() {
           <div className="profile-avatar">
             {foodPartner?.image && (
               <img
-                src={
-                  foodPartner.image.startsWith("http")
-                    ? foodPartner.image
-                    : getAssetUrl(foodPartner.image)
-                }
+                src={getProfileImageUrl(foodPartner.image)}
                 alt={foodPartner.name}
               />
             )}
@@ -263,6 +315,30 @@ function FoodProfile() {
               onChange={(e) => setEditInstagramHandle(e.target.value)}
               placeholder="Enter Instagram handle"
             />
+
+            <label className="profile-modal-label">Profile Photo</label>
+            <div className="profile-modal-photo-section">
+              {previewImage ? (
+                <img
+                  src={previewImage}
+                  alt="Profile preview"
+                  className="profile-modal-photo-preview"
+                />
+              ) : (
+                <div className="profile-modal-photo-placeholder">No photo</div>
+              )}
+
+              <label className="profile-modal-upload" htmlFor="profile-photo-input">
+                {selectedImage ? "Change photo" : "Upload photo"}
+              </label>
+              <input
+                id="profile-photo-input"
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                onChange={handleImageChange}
+                className="profile-modal-file-input"
+              />
+            </div>
 
             {saveError && <p className="profile-modal-error">{saveError}</p>}
 

@@ -1,8 +1,11 @@
 const express = require('express');
 const partnerController = require('../auth/foodPartner.controller');
-
+const multer = require('multer');
 
 const router = express.Router();
+const upload = multer({
+  storage: multer.memoryStorage(),
+});
 
 const authMiddleware = require('../middlewares/auth.middleware');
 const { clearCookieOptions } = require('../src/cookieOptions');
@@ -24,7 +27,7 @@ router.post("/logout", (req, res) => {
   res.json({ message: "Logged out" });
 });
 router.get('/:id/profile', partnerController.getPartnerProfile);
-router.patch('/:id', authMiddleware.authFoodPartner, partnerController.updatePartnerProfile);
+router.patch('/:id', authMiddleware.authFoodPartner, upload.single('image'), partnerController.updatePartnerProfile);
 
 
 router.get('/:id',authMiddleware.authFoodPartner, partnerController.getPartnerProfile);

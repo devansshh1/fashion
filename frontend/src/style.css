@@ -528,6 +528,50 @@ input:focus {
   border-color: #8d60a8;
 }
 
+.profile-modal-photo-section {
+  margin-bottom: 14px;
+}
+
+.profile-modal-photo-preview,
+.profile-modal-photo-placeholder {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 2px solid rgba(141, 96, 168, 0.45);
+  margin-bottom: 12px;
+}
+
+.profile-modal-photo-preview {
+  display: block;
+  object-fit: cover;
+  object-position: center;
+}
+
+.profile-modal-photo-placeholder {
+  display: grid;
+  place-items: center;
+  background: #0b0c10;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.profile-modal-upload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #1f2937;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.profile-modal-file-input {
+  display: none;
+}
+
 .profile-modal-error {
   margin: 0 0 14px;
   color: #fda4af;
