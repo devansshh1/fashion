@@ -9,9 +9,15 @@ const { uploadImage } = require("../service/storage.service");
 async function uploadPost(req, res) {
   try {
     const { name, category } = req.body;
+    const ownerUserId = req.user?._id || null;
+    const ownerPartnerId = req.foodPartner?._id || null;
 
     if (!req.file) {
       return res.status(400).json({ message: "Image required" });
+    }
+
+    if (!ownerUserId && !ownerPartnerId) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
     const uploadedImage = await uploadImage(
@@ -23,7 +29,8 @@ async function uploadPost(req, res) {
       name,
       category,
       image: uploadedImage.url,
-      userId: req.user._id
+      userId: ownerUserId,
+      partnerId: ownerPartnerId
     });
 
     res.status(201).json({ message: "Post uploaded", post });
@@ -44,6 +51,7 @@ async function getAllPosts(req, res) {
 
     const posts = await Post.find(filter)
       .populate("userId", "name")
+      .populate("partnerId", "name image InstagramHandle")
       .sort({ createdAt: -1 });
 
     res.json({ posts });
@@ -65,6 +73,7 @@ async function getTopTrending(req, res) {
 
     const posts = await Post.find(filter)
       .populate("userId", "name")
+      .populate("partnerId", "name image InstagramHandle")
       .sort({ score: -1 })
       .limit(5);
 
@@ -236,6 +245,7 @@ async function getSavedPosts(req, res) {
 
     const posts = await Post.find({ _id: { $in: postIds } })
       .populate("userId", "name")
+      .populate("partnerId", "name image InstagramHandle")
       .sort({ createdAt: -1 });
 
     res.json({ posts });

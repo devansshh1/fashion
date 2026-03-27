@@ -1,6 +1,6 @@
 import React from 'react';
 
-function AuthForm({title, fields, buttonText, onSubmit, error}) {
+function AuthForm({title, fields, buttonText, onSubmit, error, footer}) {
     return (
         <div className="container">
             <div className="card   ">
@@ -34,6 +34,8 @@ function AuthForm({title, fields, buttonText, onSubmit, error}) {
                         {buttonText}
                     </button>
                 </form>
+
+                {footer && <div className="auth-footer">{footer}</div>}
 
             </div>
         </div>

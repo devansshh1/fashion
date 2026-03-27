@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AuthForm from "../components/AuthForm";
 import API from "../api/API";
 import { AuthContext } from "../context/AuthContext";
@@ -32,7 +32,7 @@ function UserRegister() {
   };
 
   const fields = [
-    { name: "name", type: "text", placeholder: "Full Name" },
+    { name: "name", type: "text", placeholder: "Name" },
     { name: "email", type: "email", placeholder: "Email" },
     { name: "password", type: "password", placeholder: "Password" }
   ];
@@ -44,6 +44,11 @@ function UserRegister() {
       buttonText="Create Account"
       onSubmit={handleSubmit}
       error={error}
+      footer={
+        <p>
+          Already signed in? <Link to="/user/login">Sign in</Link>
+        </p>
+      }
     />
   );
 }

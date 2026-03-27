@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import AuthForm from "../components/AuthForm";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import API from "../api/API";
 
 function PartnerLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [error, setError] = useState("");
+  const redirectTo = location.state?.redirectTo;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,10 +35,12 @@ function PartnerLogin() {
 
         localStorage.setItem("partnerId", verifiedPartnerId);
         localStorage.setItem("isPartnerLoggedIn", "true");
-        navigate(`/partner/dashboard/${verifiedPartnerId}`);
+        navigate(redirectTo || `/partner/dashboard/${verifiedPartnerId}`, {
+          replace: true
+        });
       }
     } catch (err) {
-      console.log("Partner login failed:", err);
+     
       localStorage.removeItem("partnerId");
       localStorage.removeItem("isPartnerLoggedIn");
       setError(
@@ -58,6 +62,11 @@ function PartnerLogin() {
       buttonText="Login"
       onSubmit={handleSubmit}
       error={error}
+      footer={
+        <p>
+          New Model ? <Link to="/partner/register">Sign up</Link>
+        </p>
+      }
     />
   );
 }

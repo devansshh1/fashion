@@ -1,16 +1,79 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import API from "../api/API";
 
 function UploadPost() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [authChecking, setAuthChecking] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [name, setName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [image, setImage] = useState(null);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkCreatorAccess = async () => {
+      try {
+        const partnerRes = await API.get("/api/partner/check-auth");
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (partnerRes.data.loggedIn) {
+          setAuthChecking(false);
+          return;
+        }
+      } catch (err) {
+      }
+
+      try {
+        const userRes = await API.get("/api/auth/user/me");
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (userRes.data) {
+          setAuthChecking(false);
+          return;
+        }
+      } catch (err) {
+        if (!isMounted) {
+          return;
+        }
+
+        navigate("/user/login", {
+          replace: true,
+          state: { redirectTo: location.pathname }
+        });
+        return;
+      }
+
+      if (isMounted) {
+        navigate("/user/login", {
+          replace: true,
+          state: { redirectTo: location.pathname }
+        });
+      }
+    };
+
+    checkCreatorAccess();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [location.pathname, navigate]);
+
   const handleSubmit = async (e) => {
   e.preventDefault();  // always first
+
+  if (isSubmitting) {
+    return;
+  }
 
   // ✅ Basic empty field validation
   if (!name.trim() || !selectedCategory || !image) {
@@ -38,6 +101,7 @@ function UploadPost() {
   formData.append("image", image);
 
   try {
+    setIsSubmitting(true);
     await API.post("/api/posts/upload", formData);
 
     alert("Post uploaded successfully 🚀");
@@ -51,9 +115,14 @@ function UploadPost() {
       status === 401 ||
       message === "Unauthorized - No Token" ||
       message === "Unauthorized - Invalid Token" ||
-      message === "Unauthorized - No User"
+      message === "Unauthorized - No User" ||
+      message === "Please login as user or model first" ||
+      message === "Please register as model first"
     ) {
-      navigate("/user/login", { replace: true });
+      navigate("/user/login", {
+        replace: true,
+        state: { redirectTo: location.pathname }
+      });
     } else if (message) {
       alert(message);
     } else {
@@ -61,8 +130,15 @@ function UploadPost() {
     }
 
     console.error(err);
+  } finally {
+    setIsSubmitting(false);
   }
-};
+  };
+
+  if (authChecking) {
+    return null;
+  }
+
   return (
     <div className="premium-page">
 
@@ -122,8 +198,8 @@ function UploadPost() {
   />
 </div>
 
-            <button type="submit" className="upload-btn">
-              Upload Post
+            <button type="submit" className="upload-btn" disabled={isSubmitting}>
+              {isSubmitting ? "Uploading..." : "Upload Post"}
             </button>
 
           </form>

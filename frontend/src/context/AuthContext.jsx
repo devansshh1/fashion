@@ -3,8 +3,6 @@ import React from "react";
 import API from "../api/API";
 export const AuthContext = createContext();
 
-const STARTUP_REQUEST_TIMEOUT = 10000;
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -12,7 +10,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let isMounted = true;
 
-    API.get("/api/auth/user/me", { timeout: STARTUP_REQUEST_TIMEOUT })
+    API.get("/api/auth/user/me")
       .then(res => {
         if (isMounted) {
           setUser(res.data);

@@ -2,7 +2,7 @@ import React from "react";
 import AuthForm from "../components/AuthForm";
 import Home from '../General/LandingPage';
 import FoodHome from '../Pages/FoodPartnerHomePage';
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import API from "../api/API";
 
@@ -94,6 +94,11 @@ const [error, setError] = useState("");
             buttonText="Register Model"
             onSubmit={handleSubmit}
             error={error}
+            footer={
+                <p>
+                    Already signed in? <Link to="/partner/login">Sign in</Link>
+                </p>
+            }
         />
     );
 }

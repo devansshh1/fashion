@@ -161,6 +161,23 @@ input:focus {
   box-shadow: 0 15px 35px rgba(141, 96, 168, 0.4);
 }
 
+.auth-footer {
+  margin-top: 22px;
+  text-align: center;
+  color: #d1d5db;
+  font-size: 0.98rem;
+}
+
+.auth-footer a {
+  color: #c4b5fd;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
 
 .switch-text{
     margin-top:18px;
@@ -841,6 +858,17 @@ input:focus {
   font-size: 14px;
   color: #b3b3b3;
 }
+
+.stats span {
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.stats span:hover {
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
 .actions {
   display: flex;
   gap: 15px;

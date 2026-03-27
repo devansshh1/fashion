@@ -2,23 +2,17 @@ import React,{useState,useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import "./landing.css";
 import { AuthContext } from "../context/AuthContext";
-import { useContext } from "react";
-import { useRef } from "react";
-import ReelFeed from "../components/ReelFeed";
-import category from '../Pages/CategoryPage';
-import { Spotlight } from "@/components/ui/spotlight";
+import { useContext, useRef } from "react";
 import { BackgroundGradient } from "@/components/ui/background-gradient";
-import { BackgroundRippleEffect } from "@/components/ui/BackgroundRippleEffect";
-import { HeroHighlight, Highlight } from "@/components/ui/HeroHighlight";
+import { HeroHighlight } from "@/components/ui/HeroHighlight";
 import { useLocation } from "react-router-dom";
 import API, { getAssetUrl } from "../api/API";
 import StartupLoader from "../components/StartupLoader";
 
-const STARTUP_REQUEST_TIMEOUT = 10000;
-
 function LandingPage() {
 const { user, loading, logout } = useContext(AuthContext);
 const [showMenu, setShowMenu] = useState(false);
+const [showAuthModal, setShowAuthModal] = useState(false);
 const [initialFeedLoading, setInitialFeedLoading] = useState(true);
 const [partnerSessionLoading, setPartnerSessionLoading] = useState(true);
 
@@ -29,6 +23,7 @@ const videoRefs = useRef([]);
     const [isPartnerLoggedIn, setIsPartnerLoggedIn] = useState(() => localStorage.getItem("isPartnerLoggedIn") === "true");
     const [partnerId, setPartnerId] = useState(() => localStorage.getItem("partnerId"));
     const location = useLocation();
+    const hasAnySession = Boolean(user || isPartnerLoggedIn);
     
 const getVideoUrl = (videoPath) => {
   return getAssetUrl(videoPath);
@@ -39,6 +34,19 @@ const clearPartnerSession = () => {
   localStorage.removeItem("partnerId");
   setIsPartnerLoggedIn(false);
   setPartnerId(null);
+};
+
+const openAuthModal = () => setShowAuthModal(true);
+const closeAuthModal = () => setShowAuthModal(false);
+
+const handleViewerStart = () => {
+  closeAuthModal();
+  navigate("/user/register");
+};
+
+const handleCreatorStart = () => {
+  closeAuthModal();
+  navigate("/partner/register");
 };
 
 
@@ -70,46 +78,57 @@ const handlePartnerLogout = async() => {
   }
 };
 useEffect(() => {
+  let isMounted = true;
+
   const fetchData = async () => {
     try {
       const [partnersRes, reelsRes] = await Promise.allSettled([
-        API.get("/api/food/top-partners", { timeout: STARTUP_REQUEST_TIMEOUT }),
-        API.get("/api/food/top-reels", { timeout: STARTUP_REQUEST_TIMEOUT })
+        API.get("/api/food/top-partners"),
+        API.get("/api/food/top-reels")
       ]);
+
+      if (!isMounted) {
+        return;
+      }
 
       if (partnersRes.status === "fulfilled") {
         setTopPartners(partnersRes.value.data.partners);
       } else {
         setTopPartners([]);
-        console.error("Top partners request timed out or failed", partnersRes.reason);
+        console.error("Top partners request failed", partnersRes.reason);
       }
 
       if (reelsRes.status === "fulfilled") {
         setTopReels(reelsRes.value.data.reels);
       } else {
         setTopReels([]);
-        console.error("Top reels request timed out or failed", reelsRes.reason);
+        console.error("Top reels request failed", reelsRes.reason);
       }
-
-    } catch (err) {
-      console.error(err);
     } finally {
-      setInitialFeedLoading(false);
+      if (isMounted) {
+        setInitialFeedLoading(false);
+      }
     }
   };
 
   fetchData();
+
+  return () => {
+    isMounted = false;
+  };
 }, [location]);
 
 useEffect(() => {
+    let isMounted = true;
 
     async function checkPartnerLogin(){
 
         try{
+            const res = await API.get("/api/partner/check-auth");
 
-            const res = await API.get("/api/partner/check-auth", {
-              timeout: STARTUP_REQUEST_TIMEOUT
-            });
+            if (!isMounted) {
+              return;
+            }
 
             if(res.data.loggedIn){
                 setIsPartnerLoggedIn(true);
@@ -123,6 +142,10 @@ useEffect(() => {
             }
 
         }catch(err){
+          if (!isMounted) {
+            return;
+          }
+
           if (err?.response?.status === 401) {
             clearPartnerSession();
             return;
@@ -130,11 +153,17 @@ useEffect(() => {
 
           clearPartnerSession();
         } finally {
-          setPartnerSessionLoading(false);
+          if (isMounted) {
+            setPartnerSessionLoading(false);
+          }
         }
     }
 
     checkPartnerLogin();
+
+    return () => {
+      isMounted = false;
+    };
 
 }, [location]);
 
@@ -145,6 +174,19 @@ useEffect(() => {
   }
   return () => window.removeEventListener("click", handleClickOutside);
 }, [showMenu]);
+
+useEffect(() => {
+  if (!showAuthModal) return undefined;
+
+  const handleEscape = (event) => {
+    if (event.key === "Escape") {
+      closeAuthModal();
+    }
+  };
+
+  window.addEventListener("keydown", handleEscape);
+  return () => window.removeEventListener("keydown", handleEscape);
+}, [showAuthModal]);
 
 useEffect(() => {
   if (!topReels.length) return;
@@ -194,30 +236,21 @@ useEffect(() => {
     <h2 className="logo z-[100] ">Flaunt</h2>
 
     <div className="nav-buttons">
-      {!user ? (
+      {!hasAnySession ? (
             <>
                 <button
                     className="login-btn nav-auth-btn"
-                    onClick={() => navigate("/user/login")}
+                    onClick={openAuthModal}
                 >
-                   <span className="nav-auth-btn__label">Viewer</span>
-                   <span className="nav-auth-btn__label">Login</span>
-                </button>
-
-                <button
-                    className="register-btn nav-auth-btn"
-                    onClick={() => navigate("/user/register")}
-                >
-                  <span className="nav-auth-btn__label">Viewer</span>
-                  <span className="nav-auth-btn__label">Register</span>
+                   <span className="nav-auth-btn__label">Get Started</span>
                 </button>
             </>
         ) : (
             <div className="nav-user-actions">
   <BackgroundGradient
-    className="rounded-xl flex justify-end bg-black text-white font-semibold cursor-pointer  ">
+    className="nav-reels-btn rounded-xl flex justify-end bg-black text-white font-semibold cursor-pointer">
           <button
-            className="bg-transparent text-white font-semibold cursor-pointer  " 
+            className="nav-reels-btn__inner bg-transparent text-white font-semibold cursor-pointer" 
             onClick={() => navigate("/reels")}
           >
             Model Reels
@@ -234,19 +267,23 @@ useEffect(() => {
   {showMenu && (
     <div  onClick={(e) => e.stopPropagation()}  className="absolute right-0 top-18 bg-black border border-gray-700 rounded-lg shadow-lg w-48 z-50">
 
-      <button
-        onClick={handleUserLogout}
-        className="block w-full text-left px-4 py-2 hover:bg-gray-800 text-white"
-      >
-        User Logout
-      </button>
+      {user && (
+        <button
+          onClick={handleUserLogout}
+          className="block w-full text-left px-4 py-2 hover:bg-gray-800 text-white"
+        >
+          User Logout
+        </button>
+      )}
 
-      <button
-        onClick={handlePartnerLogout}
-        className="block w-full text-left px-4 py-2 hover:bg-gray-800 text-white"
-      >
-        Model Logout
-      </button>
+      {isPartnerLoggedIn && (
+        <button
+          onClick={handlePartnerLogout}
+          className="block w-full text-left px-4 py-2 hover:bg-gray-800 text-white"
+        >
+          Model Logout
+        </button>
+      )}
 
     </div>
   )}
@@ -361,23 +398,13 @@ Where Style Goes Viral
             <div className="landing-cta">
 {!isPartnerLoggedIn ? (
 
-<>
 <button
 className="register-btn font-satoshi landing-cta-btn"
 style={{ background: "#8d60a8" }}
-onClick={() => navigate("/partner/register")}
+onClick={openAuthModal}
 >
-Creator Sign Up
+Login / Get Started
 </button>
-
-<button
-className="register-btn font-satoshi landing-cta-btn"
-style={{ background: "#8d60a8" }}
-onClick={() => navigate("/partner/login")}
->
-Creator Login
-</button>
-</>
 
 ) : (
 
@@ -395,6 +422,49 @@ Upload Reel
 </div>
 
 </HeroHighlight>
+
+      {showAuthModal && (
+        <div className="auth-choice-overlay" onClick={closeAuthModal}>
+          <div
+            className="auth-choice-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="auth-choice-close"
+              onClick={closeAuthModal}
+              aria-label="Close role selection"
+            >
+              x
+            </button>
+
+            
+            <h3 className="auth-choice-title">Choose how you want to use Flaunt</h3>
+
+            <div className="auth-choice-grid">
+              <button
+                type="button"
+                className="auth-choice-card"
+                onClick={handleViewerStart}
+              >
+                <span className="auth-choice-icon" aria-hidden="true">VIEWER</span>
+                
+                <span className="auth-choice-copy">Browse & like outfits</span>
+              </button>
+
+              <button
+                type="button"
+                className="auth-choice-card"
+                onClick={handleCreatorStart}
+              >
+                <span className="auth-choice-icon" aria-hidden="true">CREATOR</span>
+               
+                <span className="auth-choice-copy">Upload & share your style</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
      </div>
     

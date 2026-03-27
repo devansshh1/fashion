@@ -25,7 +25,12 @@ const postSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      default: null
+    },
+    partnerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "FoodPartner",
+      default: null
     },
     likesCount: {
       type: Number,

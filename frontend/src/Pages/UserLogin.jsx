@@ -1,13 +1,15 @@
 import React, { useContext } from "react";
 import AuthForm from "../components/AuthForm";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import API from "../api/API";
 
 function UserLogin(){
 
     const navigate = useNavigate();
-    const { setUser } = useContext(AuthContext);   // 🔥 ADD THIS
+    const location = useLocation();
+    const { setUser } = useContext(AuthContext);
+    const redirectTo = location.state?.redirectTo || "/";
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -24,9 +26,9 @@ function UserLogin(){
 
         if (resp.status === 200) {
 
-            setUser(resp.data);   // 🔥 VERY IMPORTANT LINE
+            setUser(resp.data);
 
-            navigate('/');        // Go to home
+            navigate(redirectTo, { replace: true });
         }
     };
 
@@ -41,6 +43,13 @@ function UserLogin(){
             fields={fields}
             buttonText="Login"
             onSubmit={handleSubmit}
+            footer={
+                <p>
+                    New User ? <Link to="/user/register">Register</Link> 
+                    <br />
+                   Model ? <Link to="/partner/login" state={{ redirectTo }}>Log In</Link> | <Link to="/partner/register"> Register</Link>
+                </p>
+            }
         />
     );
 }

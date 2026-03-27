@@ -65,6 +65,42 @@ async function authUser(req,res,next){
     }
 }
 
+async function authUserOrFoodPartner(req, res, next) {
+    const userToken = req.cookies.userToken;
+    const partnerToken = req.cookies.partnerToken;
 
+    if (!userToken && !partnerToken) {
+        return res.status(401).json({ message: "Please login as user or model first" });
+    }
 
-module.exports = { authFoodPartner, authUser };
+    if (userToken) {
+        try {
+            const decoded = jwt.verify(userToken, process.env.JWT_SECRET);
+            const user = await User.findById(decoded.id);
+
+            if (user) {
+                req.user = user;
+                req.authRole = "user";
+                return next();
+            }
+        } catch (err) {
+        }
+    }
+
+    if (partnerToken) {
+        try {
+            const decoded = jwt.verify(partnerToken, process.env.JWT_SECRET);
+            const foodPartner = await FoodPartner.findById(decoded.id);
+
+            if (foodPartner) {
+                req.foodPartner = foodPartner;
+                req.authRole = "partner";
+                return next();
+            }
+        } catch (err) {
+        }
+    }
+
+    return res.status(401).json({ message: "Please login as user or model first" });
+}
+module.exports = { authFoodPartner, authUser, authUserOrFoodPartner };
