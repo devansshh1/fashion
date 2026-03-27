@@ -195,7 +195,7 @@ const requireLogin = () => {
       <div className="comment-list">
         {commentList.map(c => (
           <div key={c._id} className="comment-item">
-            <strong>{c.user.name}</strong>: {c.text}
+            <strong>{c.user?.name || c.partner?.name || "User"}</strong>: {c.text}
           </div>
         ))}
       </div>
@@ -244,10 +244,7 @@ const requireLogin = () => {
             {/* TOP OVERLAY */}
 <div className="top-overlay">
 
-    <h3 className="item-name">
-        {videoData.name || "d1"}
-    </h3>
-
+   
     <button className="visit-btn" onClick={openWebsite}>
         Model Profile
     </button>

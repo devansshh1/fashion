@@ -572,6 +572,53 @@ input:focus {
   display: none;
 }
 
+.profile-video-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(0, 0, 0, 0.96);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-video-player {
+  width: min(100%, 440px);
+  height: 100%;
+  object-fit: cover;
+  background: #000000;
+}
+
+.profile-video-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 95;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  font-size: 42px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.profile-video-action-bar {
+  position: absolute;
+  right: 18px;
+  bottom: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  z-index: 94;
+  color: #ffffff;
+}
+
+.profile-comment-empty {
+  color: #d1d5db;
+  text-align: center;
+  margin: 18px 0;
+}
+
 .profile-modal-error {
   margin: 0 0 14px;
   color: #fda4af;
@@ -730,14 +777,12 @@ input:focus {
 .top-overlay{
     position:absolute;
     top:0;
-    left:0;
+    
     width:100%;
-    padding:20px 16px 0;
-
+    padding:20px 9px 0;
     display:flex;
-    justify-content:space-between;
-    align-items:center;
-
+    justify-content:flex-end;
+    
     color:white;
     z-index:3;
 }

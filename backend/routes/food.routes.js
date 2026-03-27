@@ -20,18 +20,18 @@ const upload = multer({
 
 routes.post('/add',authFoodPartner.authFoodPartner,upload.single('video'),foodcontroller.addFood); 
 routes.get('/',  foodcontroller.getAllFoods);
-routes.get('/saved', authFoodPartner.authUser, foodcontroller.savedFoodItems);
+routes.get('/saved', authFoodPartner.authUserOrFoodPartner, foodcontroller.savedFoodItems);
 
 routes.get('/partner/:partnerId', foodcontroller.getFoodsByPartner);
-routes.post('/:foodId/comment', authFoodPartner.authUser, foodcontroller.addComment);
+routes.post('/:foodId/comment', authFoodPartner.authUserOrFoodPartner, foodcontroller.addComment);
 routes.post(
   "/:contentId",
-  authFoodPartner.authUser,
+  authFoodPartner.authUserOrFoodPartner,
   foodcontroller.likeFood
 );
-routes.post('/:foodId/save', authFoodPartner.authUser, foodcontroller.saveFood);
+routes.post('/:foodId/save', authFoodPartner.authUserOrFoodPartner, foodcontroller.saveFood);
 routes.get('/:foodId/comments', foodcontroller.getComments);
-routes.delete('/comment/:commentId', authFoodPartner.authUser, foodcontroller.deleteComment);
+routes.delete('/comment/:commentId', authFoodPartner.authUserOrFoodPartner, foodcontroller.deleteComment);
 routes.get("/top-partners", foodcontroller.getTopPartners);
 routes.get("/top-reels", foodcontroller.getTopReels);
 module.exports=routes;

@@ -4,7 +4,12 @@ const likeSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    default: null
+  },
+  partner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "FoodPartner",
+    default: null
   },
   contentType: {
     type: String,
@@ -17,5 +22,22 @@ const likeSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-likeSchema.index({user:1, contentId:1, contentType:1}, {unique:true}); // prevent multiple likes by same user on same content
+likeSchema.pre("validate", function () {
+  if (!this.user && !this.partner) {
+    throw new Error("Like must belong to a user or partner");
+  }
+
+  if (this.user && this.partner) {
+    throw new Error("Like cannot belong to both user and partner");
+  }
+});
+
+likeSchema.index(
+  { user: 1, contentId: 1, contentType: 1 },
+  { unique: true, partialFilterExpression: { user: { $type: "objectId" } } }
+);
+likeSchema.index(
+  { partner: 1, contentId: 1, contentType: 1 },
+  { unique: true, partialFilterExpression: { partner: { $type: "objectId" } } }
+);
 module.exports = mongoose.model('Like', likeSchema);

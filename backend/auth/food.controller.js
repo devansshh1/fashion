@@ -64,10 +64,15 @@ async function getFoodsByPartner(req,res){
 async function saveFood(req, res) {
   try {
     const { foodId } = req.params;
-    const userId = req.user._id;
+    const actorId = req.user?._id || req.foodPartner?._id;
+    const actorQuery = req.user ? { user: actorId } : { partner: actorId };
+
+    if (!actorId) {
+      return res.status(401).json({ message: "Please login first" });
+    }
 
     const existing = await SaveModel.findOne({
-      user: userId,
+      ...actorQuery,
       contentId: foodId,
       contentType: "food"
     });
@@ -88,7 +93,7 @@ async function saveFood(req, res) {
     }
 
     await SaveModel.create({
-      user: userId,
+      ...actorQuery,
       contentId: foodId,
       contentType: "food"
     });
@@ -105,7 +110,8 @@ async function saveFood(req, res) {
     });
 
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    console.error("saveFood error:", err);
+    res.status(500).json({ message: err.message || "Server error" });
   }
 }
 
@@ -114,7 +120,8 @@ async function likeFood(req, res) {
 
     const { contentId } = req.params;
     const { contentType } = req.body; // "food" or "post"
-    const userId = req.user._id;
+    const actorId = req.user?._id || req.foodPartner?._id;
+    const actorQuery = req.user ? { user: actorId } : { partner: actorId };
 
     let Model;
 
@@ -133,7 +140,7 @@ async function likeFood(req, res) {
     }
 
     const existingLike = await LikeModel.findOne({
-      user: userId,
+      ...actorQuery,
       contentType,
       contentId
     });
@@ -152,7 +159,7 @@ async function likeFood(req, res) {
 
     // LIKE
     await LikeModel.create({
-      user: userId,
+      ...actorQuery,
       contentType,
       contentId
     });
@@ -172,8 +179,15 @@ async function likeFood(req, res) {
 async function addComment(req, res) {
   try {
     const { foodId } = req.params;
-    const userId = req.user._id;
+    const actorId = req.user?._id || req.foodPartner?._id;
+    const actorPayload = req.user ? { user: actorId } : { partner: actorId };
     const { text } = req.body;
+
+    if (!actorId) {
+      return res.status(401).json({
+        message: "Please login first"
+      });
+    }
 
     if (!text) {
       return res.status(400).json({
@@ -189,7 +203,7 @@ async function addComment(req, res) {
     }
 
     await CommentModel.create({
-      user: userId,
+      ...actorPayload,
       contentType: "food",
       contentId: foodId,
       text
@@ -207,9 +221,9 @@ async function addComment(req, res) {
     });
 
   } catch (err) {
-   
+    console.error("addComment error:", err);
     res.status(500).json({
-      message: "Server error"
+      message: err.message || "Server error"
     });
   }
 }
@@ -227,6 +241,7 @@ async function getComments(req,res){
 contentId: foodId
         })
         .populate('user','name')
+        .populate('partner','name')
         .sort({createdAt:-1})
         .skip((page-1)*limit)
         .limit(limit);
@@ -245,9 +260,8 @@ async function deleteComment(req,res){
     try{
 
         const { commentId } = req.params;
-        const userId = req.user._id;
-
         const comment = await CommentModel.findById(commentId);
+        const actorId = req.user?._id || req.foodPartner?._id;
 
         if(!comment){
             return res.status(404).json({
@@ -255,8 +269,12 @@ async function deleteComment(req,res){
             });
         }
 
+        const isOwner = comment.user
+            ? comment.user.toString() === actorId.toString()
+            : comment.partner && comment.partner.toString() === actorId.toString();
+
         // Only owner can delete
-        if(comment.user.toString() !== userId.toString()){
+        if(!isOwner){
             return res.status(403).json({
                 message:"Unauthorized"
             });
@@ -265,7 +283,7 @@ async function deleteComment(req,res){
         await CommentModel.deleteOne({_id:commentId});
 
         await FoodModel.findByIdAndUpdate(
-            comment.food,
+            comment.contentId,
             {$inc:{commentsCount:-1}}
         );
 
@@ -282,10 +300,11 @@ async function deleteComment(req,res){
 }
 async function savedFoodItems(req, res) {
   try {
-    const userId = req.user._id;
+    const actorId = req.user?._id || req.foodPartner?._id;
+    const actorQuery = req.user ? { user: actorId } : { partner: actorId };
 
     const savedItems = await SaveModel.find({
-      user: userId,
+      ...actorQuery,
       contentType: "food"
     });
 

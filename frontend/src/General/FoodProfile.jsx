@@ -1,12 +1,21 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { FaBookmark, FaHeart, FaRegCommentDots } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 import API, { getAssetUrl } from "../api/API";
+import { AuthContext } from "../context/AuthContext";
 
 function FoodProfile() {
   const { id } = useParams();
+  const { user } = useContext(AuthContext);
   const [foodPartner, setFoodPartner] = useState(null);
   const [videos, setVideos] = useState([]);
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [selectedVideoLiked, setSelectedVideoLiked] = useState(false);
+  const [selectedVideoSaved, setSelectedVideoSaved] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [commentList, setCommentList] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [commentError, setCommentError] = useState("");
   const [canEditProfile, setCanEditProfile] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -17,6 +26,7 @@ function FoodProfile() {
   const [saveError, setSaveError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const videoRef = useRef();
+  const isPartnerLoggedIn = localStorage.getItem("isPartnerLoggedIn") === "true";
 
   useEffect(() => {
     async function fetchProfile() {
@@ -82,6 +92,140 @@ function FoodProfile() {
   const getProfileImageUrl = (imagePath) => {
     if (!imagePath) return "";
     return imagePath.startsWith("http") ? imagePath : getAssetUrl(imagePath);
+  };
+
+  const requireUserLogin = () => {
+    if (user || isPartnerLoggedIn) {
+      return true;
+    }
+
+    alert("Please login to like, comment, or save reels.");
+    return false;
+  };
+
+  const syncVideoState = (videoId, updater) => {
+    setVideos((prev) =>
+      prev.map((video) => (video._id === videoId ? updater(video) : video))
+    );
+
+    setSelectedVideo((prev) => {
+      if (!prev || prev._id !== videoId) return prev;
+      return updater(prev);
+    });
+  };
+
+  const openVideoModal = (video) => {
+    setSelectedVideo(video);
+    setSelectedVideoLiked(false);
+    setSelectedVideoSaved(false);
+    setShowComments(false);
+    setCommentList([]);
+    setNewComment("");
+    setCommentError("");
+  };
+
+  const closeVideoModal = () => {
+    setSelectedVideo(null);
+    setSelectedVideoLiked(false);
+    setSelectedVideoSaved(false);
+    setShowComments(false);
+    setCommentList([]);
+    setNewComment("");
+    setCommentError("");
+  };
+
+  const handleLikeVideo = async () => {
+    if (!selectedVideo || !requireUserLogin()) return;
+
+    const optimisticLiked = !selectedVideoLiked;
+    setSelectedVideoLiked(optimisticLiked);
+    syncVideoState(selectedVideo._id, (video) => ({
+      ...video,
+      likesCount: Math.max(0, (video.likesCount || 0) + (optimisticLiked ? 1 : -1)),
+    }));
+
+    try {
+      const resp = await API.post(`/api/food/${selectedVideo._id}`, {
+        contentType: "food",
+      });
+
+      if (typeof resp.data?.liked === "boolean") {
+        setSelectedVideoLiked(resp.data.liked);
+
+        syncVideoState(selectedVideo._id, (video) => ({
+          ...video,
+          likesCount: Math.max(
+            0,
+            (video.likesCount || 0) + (resp.data.liked === optimisticLiked ? 0 : resp.data.liked ? 1 : -1)
+          ),
+        }));
+      }
+    } catch (err) {
+      setSelectedVideoLiked(!optimisticLiked);
+      syncVideoState(selectedVideo._id, (video) => ({
+        ...video,
+        likesCount: Math.max(0, (video.likesCount || 0) + (optimisticLiked ? -1 : 1)),
+      }));
+    }
+  };
+
+  const handleSaveVideo = async () => {
+    if (!selectedVideo || !requireUserLogin()) return;
+
+    try {
+      const resp = await API.post(`/api/food/${selectedVideo._id}/save`);
+      setSelectedVideoSaved(Boolean(resp.data?.saved));
+
+      if (typeof resp.data?.savesCount === "number") {
+        syncVideoState(selectedVideo._id, (video) => ({
+          ...video,
+          savesCount: resp.data.savesCount,
+        }));
+      }
+    } catch (err) {
+      setCommentError(err.response?.data?.message || "Unable to save reel.");
+    }
+  };
+
+  const loadComments = async (videoId) => {
+    const resp = await API.get(`/api/food/${videoId}/comments`);
+    setCommentList(resp.data);
+  };
+
+  const openComments = async () => {
+    if (!selectedVideo || !requireUserLogin()) return;
+
+    try {
+      setCommentError("");
+      setShowComments(true);
+      await loadComments(selectedVideo._id);
+    } catch (err) {
+      setCommentError("Unable to load comments.");
+    }
+  };
+
+  const handleCommentSubmit = async () => {
+    if (!selectedVideo || !requireUserLogin()) return;
+
+    const text = newComment.trim();
+
+    if (!text) {
+      setCommentError("Comment cannot be empty.");
+      return;
+    }
+
+    try {
+      setCommentError("");
+      await API.post(`/api/food/${selectedVideo._id}/comment`, { text });
+      setNewComment("");
+      await loadComments(selectedVideo._id);
+      syncVideoState(selectedVideo._id, (video) => ({
+        ...video,
+        commentsCount: (video.commentsCount || 0) + 1,
+      }));
+    } catch (err) {
+      setCommentError(err.response?.data?.message || "Unable to post comment.");
+    }
   };
 
   const openEditModal = () => {
@@ -256,7 +400,7 @@ function FoodProfile() {
             <div
               key={video._id}
               className="video-card"
-              onClick={() => setSelectedVideo(video)}
+              onClick={() => openVideoModal(video)}
             >
               <video
                 ref={videoRef}
@@ -276,11 +420,11 @@ function FoodProfile() {
       </div>
 
       {selectedVideo && (
-        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+        <div className="profile-video-modal">
           <button
             type="button"
-            onClick={() => setSelectedVideo(null)}
-            className="absolute top-5 right-5 text-white text-3xl z-50"
+            onClick={closeVideoModal}
+            className="profile-video-close"
           >
             x
           </button>
@@ -290,8 +434,83 @@ function FoodProfile() {
             autoPlay
             loop
             preload="metadata"
-            className="w-full h-full object-cover"
+            className="profile-video-player"
           />
+
+          <div className="profile-video-action-bar">
+            <div className="action">
+              <FaHeart
+                size={28}
+                color={selectedVideoLiked ? "red" : "white"}
+                onClick={handleLikeVideo}
+              />
+              <span>{selectedVideo.likesCount || 0}</span>
+            </div>
+
+            <div className="action">
+              <FaBookmark
+                size={26}
+                color={selectedVideoSaved ? "gold" : "white"}
+                onClick={handleSaveVideo}
+              />
+              <span>{selectedVideo.savesCount || 0}</span>
+            </div>
+
+            <div className="action">
+              <FaRegCommentDots
+                size={26}
+                onClick={openComments}
+              />
+              <span>{selectedVideo.commentsCount || 0}</span>
+            </div>
+          </div>
+
+          {showComments && (
+            <div className="comment-modal" onClick={() => setShowComments(false)}>
+              <div className="comment-box" onClick={(e) => e.stopPropagation()}>
+                <h3>Comments</h3>
+
+                <div className="comment-list">
+                  {commentList.length === 0 ? (
+                    <p className="profile-comment-empty">No comments yet.</p>
+                  ) : (
+                    commentList.map((comment) => (
+                      <div key={comment._id} className="comment-item">
+                        <strong>{comment.user?.name || comment.partner?.name || "User"}</strong>: {comment.text}
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="comment-input-row">
+                  <input
+                    className="comment-input"
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Write comment..."
+                  />
+                </div>
+
+                {commentError && <p className="profile-modal-error">{commentError}</p>}
+
+                <div className="comment-actions">
+                  <button
+                    className="comment-post-btn"
+                    onClick={handleCommentSubmit}
+                  >
+                    Post
+                  </button>
+
+                  <button
+                    className="comment-close-btn"
+                    onClick={() => setShowComments(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
