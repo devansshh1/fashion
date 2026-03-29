@@ -1,47 +1,48 @@
 import axios from "axios";
-import { authSession } from "../auth/sessionStorage";
 
+// Remove trailing slash from base URL
 const trimTrailingSlash = (value = "") => value.replace(/\/+$/, "");
+
+// Base URL from env
 export const API_BASE_URL = trimTrailingSlash(
   import.meta.env.VITE_API_URL || ""
 );
 
+// Axios instance
 const API = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true
+  withCredentials: true, // keep for cookie fallback
 });
 
-API.interceptors.request.use((config) => {
-  const url = config.url || "";
-  const userToken = authSession.getUserToken();
-  const partnerToken = authSession.getPartnerToken();
+// 🔥 Interceptor — ALWAYS attach token
+API.interceptors.request.use(
+  (config) => {
+    try {
+      // Prefer partner token, fallback to user token
+      const partnerToken = localStorage.getItem("partnerToken");
+      const userToken = localStorage.getItem("userToken");
 
-  let token = null;
+      const token = partnerToken || userToken;
 
-  if (url.startsWith("/api/posts/upload")) {
-    token = partnerToken || userToken;
-  } else if (url.startsWith("/api/auth/user") || url.startsWith("/api/posts/")) {
-    token = userToken;
-  } else if (url.startsWith("/api/auth/partner") || url.startsWith("/api/partner")) {
-    token = partnerToken;
-  } else if (url.startsWith("/api/food")) {
-    token = partnerToken || userToken;
-  }
+      if (token) {
+        config.headers = config.headers || {};
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (err) {
+      console.error("Token attach error:", err);
+    }
 
-  if (token) {
-    config.headers = config.headers || {};
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-  return config;
-});
-
+// Utility for assets
 export const getAssetUrl = (path = "") => {
   if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://")) {
     return path;
   }
-
   return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 };
 
