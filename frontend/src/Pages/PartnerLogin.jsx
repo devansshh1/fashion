@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import AuthForm from "../components/AuthForm";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import API from "../api/API";
+import { authSession } from "../auth/sessionStorage";
 
 function PartnerLogin() {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ function PartnerLogin() {
       });
 
       if (resp.status === 200) {
+        authSession.setPartnerToken(resp.data.token);
         const authRes = await API.get("/api/partner/check-auth");
         const verifiedPartnerId = authRes.data.partner?.id;
 
@@ -40,7 +42,7 @@ function PartnerLogin() {
         });
       }
     } catch (err) {
-     
+      authSession.clearPartnerToken();
       localStorage.removeItem("partnerId");
       localStorage.removeItem("isPartnerLoggedIn");
       setError(

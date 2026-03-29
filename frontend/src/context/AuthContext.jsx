@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect } from "react";
 import React from "react";
 import API from "../api/API";
+import { authSession } from "../auth/sessionStorage";
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -18,6 +19,7 @@ export const AuthProvider = ({ children }) => {
       })
       .catch(() => {
         if (isMounted) {
+          authSession.clearUserToken();
           setUser(null);
         }
       })
@@ -34,6 +36,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     await API.post("/api/auth/user/logout");
+    authSession.clearUserToken();
     setUser(null);
   };
 

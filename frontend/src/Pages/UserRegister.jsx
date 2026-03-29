@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import AuthForm from "../components/AuthForm";
 import API from "../api/API";
 import { AuthContext } from "../context/AuthContext";
+import { authSession } from "../auth/sessionStorage";
 
 function UserRegister() {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ function UserRegister() {
         password: formData.get("password")
       });
 
+      authSession.setUserToken(resp.data.token);
       setUser(resp.data);
       navigate("/");
     } catch (err) {

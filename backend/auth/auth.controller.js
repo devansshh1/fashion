@@ -25,11 +25,7 @@ async function registerUser(req,res){
 res.cookie("userToken", token, cookieOptions);
 
 
-
- 
-
-
-     res.status(201).json({message:'User registered successfully',_id:newuser._id,name:newuser.name,email:newuser.email}); 
+     res.status(201).json({message:'User registered successfully',token,_id:newuser._id,name:newuser.name,email:newuser.email}); 
 }
 async  function loginUser(req,res){
     //login logic here
@@ -47,7 +43,7 @@ async  function loginUser(req,res){
    res.cookie("userToken", token, cookieOptions);
 
 
-    res.status(200).json({message:'Login successful',_id:existingUser._id,name:existingUser.name,email:existingUser.email});
+    res.status(200).json({message:'Login successful',token,_id:existingUser._id,name:existingUser.name,email:existingUser.email});
 }
 async function logoutUser(req,res){
     res.clearCookie("userToken", clearCookieOptions);
@@ -149,6 +145,7 @@ if (!allowedTypes.includes(req.file.mimetype)) {
 
   res.status(201).json({
     message: "Model registered successfully",
+    token,
     _id: newPartner._id,
     name: newPartner.name,
     email: newPartner.email
@@ -171,7 +168,7 @@ async function loginFoodPartner(req,res){
 
 
 
-    res.status(200).json({message:'Login successful',_id:existingPartner._id,name:existingPartner.name,email:existingPartner.email});
+    res.status(200).json({message:'Login successful',token,_id:existingPartner._id,name:existingPartner.name,email:existingPartner.email});
     
 }
 async function logoutFoodPartner(req,res){

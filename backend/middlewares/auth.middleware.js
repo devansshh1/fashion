@@ -1,12 +1,13 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
 const FoodPartner = require('../models/foodpartner.model');
+const { getBearerToken } = require('../src/authToken');
 
 
 // ✅ FOOD PARTNER AUTH
 async function authFoodPartner(req, res, next){
 
-    const token = req.cookies.partnerToken;
+    const token = req.cookies.partnerToken || getBearerToken(req);
 
     
 
@@ -39,7 +40,7 @@ async function authFoodPartner(req, res, next){
 // ✅ USER AUTH
 async function authUser(req,res,next){
 
-    const token = req.cookies.userToken; // ⭐ DIFFERENT COOKIE
+    const token = req.cookies.userToken || getBearerToken(req); // ⭐ DIFFERENT COOKIE
 
     if(!token){
         return res.status(401).json({message:'Please register first'});
@@ -66,8 +67,9 @@ async function authUser(req,res,next){
 }
 
 async function authUserOrFoodPartner(req, res, next) {
-    const userToken = req.cookies.userToken;
-    const partnerToken = req.cookies.partnerToken;
+    const bearerToken = getBearerToken(req);
+    const userToken = req.cookies.userToken || bearerToken;
+    const partnerToken = req.cookies.partnerToken || bearerToken;
 
     if (!userToken && !partnerToken) {
         return res.status(401).json({ message: "Please login as user or model first" });

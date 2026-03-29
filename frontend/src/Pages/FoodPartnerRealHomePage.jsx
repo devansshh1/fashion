@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/API";
+import { authSession } from "../auth/sessionStorage";
 
 const styles = {
   page: {
@@ -117,6 +118,7 @@ function FoodPartnerRealHomePage() {
 
         localStorage.removeItem("partnerId");
         localStorage.removeItem("isPartnerLoggedIn");
+        authSession.clearPartnerToken();
         setStatusMessage("Please log in as a model before uploading a reel.");
         setAuthChecking(false);
         navigate("/partner/login", { replace: true });
@@ -180,6 +182,7 @@ function FoodPartnerRealHomePage() {
       if (err.response?.status === 401) {
         localStorage.removeItem("partnerId");
         localStorage.removeItem("isPartnerLoggedIn");
+        authSession.clearPartnerToken();
         setStatusMessage("Your model session expired. Please log in again.");
         navigate("/partner/login", { replace: true });
         return;

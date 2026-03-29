@@ -3,6 +3,7 @@ import AuthForm from "../components/AuthForm";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import API from "../api/API";
+import { authSession } from "../auth/sessionStorage";
 
 function UserLogin(){
 
@@ -25,6 +26,7 @@ function UserLogin(){
         );
 
         if (resp.status === 200) {
+            authSession.setUserToken(resp.data.token);
 
             setUser(resp.data);
 

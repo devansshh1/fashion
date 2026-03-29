@@ -8,6 +8,7 @@ import { HeroHighlight } from "@/components/ui/HeroHighlight";
 import { useLocation } from "react-router-dom";
 import API, { getAssetUrl } from "../api/API";
 import StartupLoader from "../components/StartupLoader";
+import { authSession } from "../auth/sessionStorage";
 
 function LandingPage() {
 const { user, loading, logout } = useContext(AuthContext);
@@ -30,6 +31,7 @@ const getVideoUrl = (videoPath) => {
 };
 
 const clearPartnerSession = () => {
+  authSession.clearPartnerToken();
   localStorage.removeItem("isPartnerLoggedIn");
   localStorage.removeItem("partnerId");
   setIsPartnerLoggedIn(false);
@@ -74,6 +76,7 @@ const handlePartnerLogout = async() => {
   alert("Model logged out");
   } catch (err) {
     console.log(err);
+    clearPartnerSession();
     alert("Unable to logout model");
   }
 };
