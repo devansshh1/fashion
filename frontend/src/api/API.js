@@ -1,27 +1,64 @@
 import axios from "axios";
 
-// Remove trailing slash from base URL
 const trimTrailingSlash = (value = "") => value.replace(/\/+$/, "");
+const isAbsoluteUrl = (value = "") => /^https?:\/\//i.test(value);
 
-// Base URL from env
-export const API_BASE_URL = trimTrailingSlash(
-  import.meta.env.VITE_API_URL || ""
-);
+const normalizeApiBaseUrl = (value = "") => {
+  const trimmedValue = trimTrailingSlash(value);
 
-// Axios instance
+  if (!trimmedValue || trimmedValue === "/api") {
+    return "";
+  }
+
+  if (!isAbsoluteUrl(trimmedValue)) {
+    return trimmedValue;
+  }
+
+  try {
+    const parsedUrl = new URL(trimmedValue);
+    return parsedUrl.pathname === "/api" ? parsedUrl.origin : trimmedValue;
+  } catch {
+    return trimmedValue;
+  }
+};
+
+const normalizeAssetBaseUrl = (value = "") => {
+  const trimmedValue = trimTrailingSlash(value);
+
+  if (!trimmedValue || trimmedValue === "/uploads") {
+    return "";
+  }
+
+  if (!isAbsoluteUrl(trimmedValue)) {
+    return trimmedValue;
+  }
+
+  try {
+    return new URL(trimmedValue).origin;
+  } catch {
+    return trimmedValue;
+  }
+};
+
+const rawApiBaseUrl = normalizeApiBaseUrl(import.meta.env.VITE_API_URL || "");
+const shouldUseSameOriginProxy =
+  import.meta.env.PROD && (!rawApiBaseUrl || isAbsoluteUrl(rawApiBaseUrl));
+
+export const API_BASE_URL = shouldUseSameOriginProxy ? "" : rawApiBaseUrl;
+const ASSET_BASE_URL = shouldUseSameOriginProxy
+  ? ""
+  : normalizeAssetBaseUrl(import.meta.env.VITE_ASSET_URL || rawApiBaseUrl);
+
 const API = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true, // keep for cookie fallback
+  withCredentials: true,
 });
 
-// 🔥 Interceptor — ALWAYS attach token
 API.interceptors.request.use(
   (config) => {
     try {
-      // Prefer partner token, fallback to user token
       const partnerToken = localStorage.getItem("partnerToken");
       const userToken = localStorage.getItem("userToken");
-
       const token = partnerToken || userToken;
 
       if (token) {
@@ -37,13 +74,14 @@ API.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Utility for assets
 export const getAssetUrl = (path = "") => {
   if (!path) return "";
+
   if (path.startsWith("http://") || path.startsWith("https://")) {
     return path;
   }
-  return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+
+  return `${ASSET_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 };
 
 export default API;
