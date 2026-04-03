@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const POST_CATEGORIES = require("../constants/postCategories");
 
 const postSchema = new mongoose.Schema(
   {
@@ -12,14 +13,7 @@ const postSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: [
-        "Old Money",
-        "Street Wear",
-        "Traditional",
-        "Aesthetic",
-        "Minimal",
-        "Maximal"
-      ],
+      enum: POST_CATEGORIES,
       required: true
     },
     userId: {

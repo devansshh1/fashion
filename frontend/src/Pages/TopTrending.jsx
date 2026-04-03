@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import PostCard from "../components/PostCard";
 import API from "../api/API";
+import { POST_CATEGORIES } from "../constants/postCategories";
 
 function TopTrending() {
   const { category: routeCategory } = useParams();
@@ -43,12 +44,9 @@ function TopTrending() {
       onChange={(e) => setCategory(e.target.value)}
     >
       <option value="">All Categories</option>
-      <option>Old Money</option>
-      <option>Street Wear</option>
-      <option>Traditional</option>
-      <option>Aesthetic</option>
-      <option>Minimal</option>
-      <option>Maximal</option>
+      {POST_CATEGORIES.map((option) => (
+        <option key={option}>{option}</option>
+      ))}
     </select>
   </div>
 

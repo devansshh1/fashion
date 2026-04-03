@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import API from "../api/API";
+import { POST_CATEGORIES } from "../constants/postCategories";
 
 function UploadPost() {
   const navigate = useNavigate();
@@ -177,12 +178,9 @@ function UploadPost() {
                 required
               >
                 <option value="">Select Category</option>
-                <option>Old Money</option>
-                <option>Street Wear</option>
-                <option>Traditional</option>
-                <option>Aesthetic</option>
-                <option>Minimal</option>
-                <option>Maximal</option>
+                {POST_CATEGORIES.map((option) => (
+                  <option key={option}>{option}</option>
+                ))}
               </select>
             </div>
 

@@ -53,6 +53,20 @@ const [comments, setComments] = useState(videoData.commentsCount);
     const videoRef = useRef(null);
 const isPartnerLoggedIn = localStorage.getItem("isPartnerLoggedIn") === "true";
 
+const playWithSound = async (player) => {
+  if (!player) {
+    return;
+  }
+
+  try {
+    player.muted = true;
+    await player.play();
+    player.muted = false;
+  } catch (err) {
+    player.muted = true;
+  }
+};
+
 const requireLogin = () => {
   if (user || isPartnerLoggedIn) {
     return true;
@@ -71,9 +85,10 @@ const requireLogin = () => {
 
         if (typeof isActive === "boolean") {
             if (isActive) {
-                player.play().catch(() => {});
+                playWithSound(player);
             } else {
                 player.pause();
+                player.muted = true;
             }
 
             return undefined;
@@ -83,9 +98,10 @@ const requireLogin = () => {
             (entries) => {
                 entries.forEach((entry) => {
                     if (entry.isIntersecting) {
-                        player.play().catch(() => {});
+                        playWithSound(player);
                     } else {
                         player.pause();
+                        player.muted = true;
                     }
                 });
             },
@@ -123,7 +139,6 @@ const requireLogin = () => {
                 ref={videoRef}
                 src={videoSrc}
                 loop
-                muted
                 playsInline
                 className="video"
             />

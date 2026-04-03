@@ -37,6 +37,7 @@ router.get("/top", postc.getTopTrending); // overall top 5 (filterable)
 router.get("/saved", authUserOrFoodPartner, postc.getSavedPosts); // NEW - get saved posts
 // Interactions
 router.post("/upload", authUserOrFoodPartner, upload.single("image"), postc.uploadPost);
+router.delete("/bulk-delete", authUserOrFoodPartner, postc.deletePosts);
 router.post("/:postId/like", authUserOrFoodPartner, postc.togglePostLike);
 router.post("/:postId/save", authUserOrFoodPartner, postc.togglePostSave);
 router.post("/:postId/comment", authUserOrFoodPartner, postc.addPostComment);

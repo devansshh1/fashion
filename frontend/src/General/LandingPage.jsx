@@ -9,6 +9,8 @@ import { useLocation } from "react-router-dom";
 import API, { getAssetUrl } from "../api/API";
 import StartupLoader from "../components/StartupLoader";
 import { authSession } from "../auth/sessionStorage";
+import { Button } from "@/components/ui/moving-border";
+import { POST_CATEGORIES } from "../constants/postCategories";
 
 function LandingPage() {
 const { user, loading, logout } = useContext(AuthContext);
@@ -308,15 +310,23 @@ useEffect(() => {
                 <h1 className="tracking-tight md:px-8 md:py-4">
 Where Style Goes Viral
                 </h1>
-<BackgroundGradient className="rounded-xl px-8 py-4">
-  <button
-    className="bg-transparent text-white font-semibold cursor-pointer tracking-tight"
-    onClick={() => navigate("/category/all")}
+               <Button
+  borderRadius="999px"
+  duration={2600}
+  containerClassName="mx-auto mt-4"
+  borderClassName="h-60 w-60 bg-[radial-gradient(circle,_rgba(125,211,252,1)_0%,_rgba(129,140,248,0.96)_26%,_rgba(217,70,239,0.86)_52%,_rgba(236,72,153,0)_76%)]"
+  className="font-satoshi px-9 py-3.5 text-[1.05rem] font-semibold tracking-[0.01em] text-white"
+  onClick={() => navigate("/category/all")}
+>
+  <span className="relative z-[1]">Find Your Style</span>
+  <span
+    aria-hidden="true"
+    className="relative z-[1] text-lg transition-transform duration-300 group-hover:translate-x-1"
   >
-    Find Your Aesthetic →
-  </button>
-</BackgroundGradient>
-
+    →
+  </span>
+</Button>
+ 
             </div>
           
  <h2 className=" tt font-satoshi tracking-tight  flex  justify-center ">Today's Top Creators</h2>
@@ -368,17 +378,21 @@ Where Style Goes Viral
 {/* CATEGORIES */}
             <div className="categories">
 
-                <h2 className="font-satoshi text-xl ">Browse By Style</h2>
+                <h2 className="font-satoshi text-3xl ">Browse By Style</h2>
 
                <div className="chips font-satoshi ">
-  {["Old Money", "Street Wear", "Traditional", "Aesthetic", "Minimal", "Maximal"].map((cat) => (
-    <span
+  {POST_CATEGORIES.map((cat) => (
+    <Button
       key={cat}
+      borderRadius="999px"
+      duration={2200}
+      containerClassName="w-full max-w-none overflow-hidden"
+      borderClassName="h-20 w-20 bg-[radial-gradient(circle,_rgba(125,211,252,0.92)_0%,_rgba(129,140,248,0.82)_30%,_rgba(217,70,239,0.62)_56%,_rgba(236,72,153,0)_78%)]"
+      className="w-full min-h-[58px] justify-center px-4 py-4 text-[1rem] font-semibold tracking-[0.01em] text-white"
       onClick={() => navigate(`/category/${cat}`)}
-      
     >
-      {cat}
-    </span>
+      <span className="relative z-[1]">{cat}</span>
+    </Button>
   ))}
 </div>
 

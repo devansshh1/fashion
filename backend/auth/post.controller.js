@@ -273,6 +273,66 @@ async function getSavedPosts(req, res) {
   }
 }
 
+async function deletePosts(req, res) {
+  try {
+    const { postIds } = req.body;
+    const actorId = req.user?._id || req.foodPartner?._id;
+    const ownerQuery = req.user
+      ? { userId: req.user._id }
+      : req.foodPartner
+        ? { partnerId: req.foodPartner._id }
+        : null;
+
+    if (!actorId || !ownerQuery) {
+      return res.status(401).json({ message: "Please login as user or model first" });
+    }
+
+    if (!Array.isArray(postIds) || postIds.length === 0) {
+      return res.status(400).json({ message: "Select at least one post to delete." });
+    }
+
+    const normalizedPostIds = [...new Set(postIds.filter(Boolean))];
+
+    const ownedPosts = await Post.find({
+      _id: { $in: normalizedPostIds },
+      ...ownerQuery,
+    }).select("_id");
+
+    if (!ownedPosts.length) {
+      return res.status(404).json({ message: "No owned posts found for deletion." });
+    }
+
+    const deletedIds = ownedPosts.map((post) => post._id.toString());
+
+    await Promise.all([
+      Like.deleteMany({
+        contentId: { $in: deletedIds },
+        contentType: "post",
+      }),
+      Save.deleteMany({
+        contentId: { $in: deletedIds },
+        contentType: "post",
+      }),
+      Comment.deleteMany({
+        contentId: { $in: deletedIds },
+        contentType: "post",
+      }),
+      Post.deleteMany({
+        _id: { $in: deletedIds },
+        ...ownerQuery,
+      }),
+    ]);
+
+    res.json({
+      message: "Posts deleted successfully",
+      deletedIds,
+      deletedCount: deletedIds.length,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
 
 module.exports = {
   uploadPost,
@@ -282,5 +342,6 @@ module.exports = {
   togglePostSave,
   addPostComment,
   getPostComments,
-  getSavedPosts
+  getSavedPosts,
+  deletePosts,
 };

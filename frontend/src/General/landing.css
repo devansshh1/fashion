@@ -178,21 +178,24 @@ height:90%;
 .chips{
   display: grid;
   grid-template-columns: repeat(2, 1fr); /* 2 columns */
-  gap: 10px;
+  gap: 8px;
   margin-top: 25px;
-  max-width: 290px;
+  max-width: 360px;
   margin-left: auto;
   margin-right: auto;
+  padding: 0 12px;
 }
 
-.chips span{
-  padding: 12px 18px;
-  background: #8d60a8;
-  border-radius: 30px;
-  white-space: nowrap;
-  text-align: center;
-  cursor: pointer;
-  font-size: 15px;
+.chips > *{
+  width: 100%;
+}
+
+@media (max-width: 520px) {
+  .chips{
+    gap: 8px;
+    max-width: 332px;
+    padding: 0 10px;
+  }
 }
 
 
