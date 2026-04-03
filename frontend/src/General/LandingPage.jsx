@@ -233,7 +233,12 @@ useEffect(() => {
     return (
 
       
-<div className="relative min-h-screen w-full bg-black overflow-x-hidden">
+<div
+  className="relative w-full overflow-x-hidden bg-black"
+  style={{ minHeight: "100dvh", backgroundColor: "#000000" }}
+>
+
+<div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 bg-black" />
 
  
 <div className="relative z-10">
@@ -299,7 +304,7 @@ useEffect(() => {
     </div>
 </nav>
        
-      <HeroHighlight className="relative z-0 ">
+      <HeroHighlight className="relative z-0 " containerClassName="bg-black">
         <div className="landing z-90">
             {/* NAVBAR */}
          
