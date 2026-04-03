@@ -61,6 +61,63 @@ async function getFoodsByPartner(req,res){
         });
     }
 }
+
+async function deleteFoods(req, res) {
+  try {
+    const ownerPartnerId = req.foodPartner?._id;
+    const requestedIds = Array.isArray(req.body?.foodIds) ? req.body.foodIds : [];
+    const validIds = [...new Set(
+      requestedIds.filter((id) => mongoose.Types.ObjectId.isValid(id))
+    )];
+
+    if (!ownerPartnerId) {
+      return res.status(401).json({ message: "Please login as model first" });
+    }
+
+    if (!validIds.length) {
+      return res.status(400).json({ message: "Select at least one reel to delete" });
+    }
+
+    const ownedFoods = await FoodModel.find({
+      _id: { $in: validIds },
+      foodPartnerId: ownerPartnerId
+    }).select("_id");
+
+    if (ownedFoods.length !== validIds.length) {
+      return res.status(403).json({
+        message: "You can only delete your own reels"
+      });
+    }
+
+    const deletedIds = ownedFoods.map((food) => food._id);
+
+    await Promise.all([
+      FoodModel.deleteMany({ _id: { $in: deletedIds } }),
+      LikeModel.deleteMany({
+        contentType: "food",
+        contentId: { $in: deletedIds }
+      }),
+      SaveModel.deleteMany({
+        contentType: "food",
+        contentId: { $in: deletedIds }
+      }),
+      CommentModel.deleteMany({
+        contentType: "food",
+        contentId: { $in: deletedIds }
+      })
+    ]);
+
+    return res.status(200).json({
+      message: "Reels deleted successfully",
+      deletedIds: deletedIds.map((id) => id.toString()),
+      deletedCount: deletedIds.length
+    });
+  } catch (err) {
+    console.error("deleteFoods error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
+
 async function saveFood(req, res) {
   try {
     const { foodId } = req.params;
@@ -378,4 +435,4 @@ async function getTopReels(req, res) {
 }
 
 
-module.exports={addFood, getAllFoods, getFoodsByPartner, likeFood, saveFood, addComment, getComments, deleteComment, savedFoodItems,getAllFoods, getTopPartners, getTopReels    };
+module.exports={addFood, getAllFoods, getFoodsByPartner, deleteFoods, likeFood, saveFood, addComment, getComments, deleteComment, savedFoodItems,getAllFoods, getTopPartners, getTopReels    };

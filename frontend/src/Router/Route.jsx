@@ -45,11 +45,13 @@ function AppRouter() {
    path="/partner/:id/profile" 
    element={<FoodProfile />} 
 />
-<Route path="/category/:category" element={<CategoryPage />} />
-  <Route path="/category/:category/top" element={<TopTrending />} />
-          <Route path="/category/:category/view" element={<ViewPosts />} />
-          <Route path="/category/:category/upload" element={<UploadPost />} />
-<Route  path="/category/:category/saved" element={<SavedPosts />} />
+<Route path="/category/:category" element={<CategoryPage />}>
+  <Route index element={<ViewPosts />} />
+  <Route path="top" element={<TopTrending />} />
+  <Route path="view" element={<ViewPosts />} />
+  <Route path="upload" element={<UploadPost />} />
+  <Route path="saved" element={<SavedPosts />} />
+</Route>
             </Routes>
         </Router>
     );

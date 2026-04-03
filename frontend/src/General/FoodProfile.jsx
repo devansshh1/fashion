@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { FaBookmark, FaHeart, FaRegCommentDots } from "react-icons/fa";
+import { FaBookmark, FaHeart, FaPlay, FaRegCommentDots } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 import API, { getAssetUrl } from "../api/API";
 import { AuthContext } from "../context/AuthContext";
@@ -19,13 +19,18 @@ function FoodProfile() {
   const [canEditProfile, setCanEditProfile] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [selectedReelIds, setSelectedReelIds] = useState([]);
   const [editName, setEditName] = useState("");
   const [editInstagramHandle, setEditInstagramHandle] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewImage, setPreviewImage] = useState("");
   const [saveError, setSaveError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const videoRef = useRef();
+  const [isSelectedVideoPlaying, setIsSelectedVideoPlaying] = useState(false);
+  const videoRef = useRef(null);
   const isPartnerLoggedIn = localStorage.getItem("isPartnerLoggedIn") === "true";
 
   useEffect(() => {
@@ -85,14 +90,43 @@ function FoodProfile() {
     };
   }, [previewImage]);
 
+  useEffect(() => {
+  if (videoRef.current && selectedVideo) {
+    videoRef.current.currentTime = 0;
+
+    videoRef.current.muted = true; // allow autoplay
+    videoRef.current.play().then(() => {
+      videoRef.current.muted = false; // unmute after start
+    }).catch(() => {});
+  }
+}, [selectedVideo]);
+
   const getVideoUrl = (videoPath) => {
     return getAssetUrl(videoPath);
+  };
+
+  const getVideoPosterUrl = (videoPath) => {
+    const videoUrl = getVideoUrl(videoPath);
+
+    if (!videoUrl || !/imagekit/i.test(videoUrl)) {
+      return "";
+    }
+
+    const [baseUrl, query = ""] = videoUrl.split("?");
+    const posterUrl = `${baseUrl}/ik-thumbnail.jpg`;
+
+    return query ? `${posterUrl}?${query}` : posterUrl;
   };
 
   const getProfileImageUrl = (imagePath) => {
     if (!imagePath) return "";
     return imagePath.startsWith("http") ? imagePath : getAssetUrl(imagePath);
   };
+
+  const getProfileStats = (videoList) => ({
+    totalPosts: videoList.length,
+    totalLikes: videoList.reduce((sum, video) => sum + (video.likesCount || 0), 0),
+  });
 
   const requireUserLogin = () => {
     if (user || isPartnerLoggedIn) {
@@ -116,6 +150,7 @@ function FoodProfile() {
 
   const openVideoModal = (video) => {
     setSelectedVideo(video);
+    setIsSelectedVideoPlaying(false);
     setSelectedVideoLiked(false);
     setSelectedVideoSaved(false);
     setShowComments(false);
@@ -125,13 +160,43 @@ function FoodProfile() {
   };
 
   const closeVideoModal = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+
     setSelectedVideo(null);
+    setIsSelectedVideoPlaying(false);
     setSelectedVideoLiked(false);
     setSelectedVideoSaved(false);
     setShowComments(false);
     setCommentList([]);
     setNewComment("");
     setCommentError("");
+  };
+
+  const toggleSelectedVideoPlayback = () => {
+    const player = videoRef.current;
+
+    if (!player) {
+      return;
+    }
+
+    if (player.paused) {
+      player.play().catch(() => {});
+      return;
+    }
+
+    player.pause();
+  };
+
+  const handleSelectedVideoKeyDown = (event) => {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+
+    event.preventDefault();
+    toggleSelectedVideoPlayback();
   };
 
   const handleLikeVideo = async () => {
@@ -229,6 +294,9 @@ function FoodProfile() {
   };
 
   const openEditModal = () => {
+    setIsDeleteMode(false);
+    setSelectedReelIds([]);
+    setDeleteError("");
     setEditName(foodPartner?.name || "");
     setEditInstagramHandle(foodPartner?.InstagramHandle || "");
     setSelectedImage(null);
@@ -246,6 +314,97 @@ function FoodProfile() {
     setSelectedImage(null);
     setPreviewImage("");
     setSaveError("");
+  };
+
+  const openDeleteMode = () => {
+    setShowMenu(false);
+    setIsDeleteMode(true);
+    setSelectedReelIds([]);
+    setDeleteError("");
+  };
+
+  const closeDeleteMode = () => {
+    setIsDeleteMode(false);
+    setSelectedReelIds([]);
+    setDeleteError("");
+  };
+
+  const toggleReelSelection = (videoId) => {
+    setSelectedReelIds((prev) =>
+      prev.includes(videoId)
+        ? prev.filter((id) => id !== videoId)
+        : [...prev, videoId]
+    );
+    setDeleteError("");
+  };
+
+  const toggleSelectAllReels = () => {
+    if (selectedReelIds.length === videos.length) {
+      setSelectedReelIds([]);
+      return;
+    }
+
+    setSelectedReelIds(videos.map((video) => video._id));
+    setDeleteError("");
+  };
+
+  const handleDeleteSelectedReels = async () => {
+    if (!selectedReelIds.length) {
+      setDeleteError("Select at least one reel to delete.");
+      return;
+    }
+
+    const shouldDelete = window.confirm(
+      `Delete ${selectedReelIds.length} reel${selectedReelIds.length > 1 ? "s" : ""}? This cannot be undone.`
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      setDeleteError("");
+
+      const res = await API.delete("/api/food/bulk-delete", {
+        data: { foodIds: selectedReelIds },
+      });
+
+      const deletedIdSet = new Set(res.data?.deletedIds || selectedReelIds);
+      const remainingVideos = videos.filter((video) => !deletedIdSet.has(video._id));
+      const nextStats = getProfileStats(remainingVideos);
+
+      setVideos(remainingVideos);
+      setFoodPartner((prev) =>
+        prev
+          ? {
+              ...prev,
+              ...nextStats,
+            }
+          : prev
+      );
+      setSelectedReelIds([]);
+      setIsDeleteMode(false);
+    } catch (err) {
+      if (err.response?.status === 404) {
+        setDeleteError("Bulk delete is not available on the server yet. Redeploy the backend and try again.");
+      } else if (err.response?.status === 401) {
+        setDeleteError("Your model session expired. Please log in again and retry.");
+      } else {
+        setDeleteError(err.response?.data?.message || "Unable to delete reels.");
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleVideoCardClick = (video) => {
+    if (isDeleteMode) {
+      toggleReelSelection(video._id);
+      return;
+    }
+
+    openVideoModal(video);
   };
 
   const handleImageChange = (event) => {
@@ -348,6 +507,14 @@ function FoodProfile() {
                 >
                   Edit Profile
                 </button>
+
+                <button
+                  type="button"
+                  className="profile-menu-item profile-menu-item-danger"
+                  onClick={openDeleteMode}
+                >
+                  Delete Reels
+                </button>
               </div>
             )}
           </div>
@@ -392,30 +559,78 @@ function FoodProfile() {
 
       <div className="divider"></div>
 
+      {canEditProfile && isDeleteMode && (
+        <div className="profile-selection-toolbar">
+          <p className="profile-selection-copy">
+            {selectedReelIds.length} selected
+          </p>
+
+          <div className="profile-selection-actions">
+            <button
+              type="button"
+              className="profile-selection-btn"
+              onClick={toggleSelectAllReels}
+            >
+              {selectedReelIds.length === videos.length && videos.length > 0 ? "Clear" : "Select All"}
+            </button>
+
+            <button
+              type="button"
+              className="profile-selection-btn"
+              onClick={closeDeleteMode}
+              disabled={isDeleting}
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              className="profile-selection-btn profile-selection-btn-danger"
+              onClick={handleDeleteSelectedReels}
+              disabled={!selectedReelIds.length || isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete Selected"}
+            </button>
+          </div>
+
+          {deleteError && <p className="profile-modal-error">{deleteError}</p>}
+        </div>
+      )}
+
       <div className="video-grid">
         {videos.length === 0 ? (
           <p className="empty-msg">No uploads yet.</p>
         ) : (
-          videos.map((video) => (
-            <div
-              key={video._id}
-              className="video-card"
-              onClick={() => openVideoModal(video)}
-            >
-              <video
-                ref={videoRef}
-                src={getVideoUrl(video.video)}
-                muted
-                playsInline
-                preload="metadata"
-                onClick={() => {
-                  if (videoRef.current.paused) videoRef.current.play();
-                  else videoRef.current.pause();
-                }}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ))
+         
+          videos.map((video) => {
+            const posterUrl = getVideoPosterUrl(video.video);
+            const isSelected = selectedReelIds.includes(video._id);
+
+            return (
+              <div
+                key={video._id}
+                className={`video-card${isDeleteMode ? " video-card--selectable" : ""}${isSelected ? " video-card--selected" : ""}`}
+                onClick={() => handleVideoCardClick(video)}
+              >
+                {posterUrl ? (
+                  <img
+                    src={posterUrl}
+                    alt={`${video.title || "Video"} thumbnail`}
+                    loading="lazy"
+                    className="video-grid-video"
+                  />
+                ) : (
+                  <div className="video-grid-video" />
+                )}
+
+                {isDeleteMode && (
+                  <div className="video-card-selection-pill">
+                    {isSelected ? "Selected" : "Select"}
+                  </div>
+                )}
+              </div>
+            );
+          })
         )}
       </div>
 
@@ -429,13 +644,34 @@ function FoodProfile() {
             x
           </button>
 
-          <video
-            src={getVideoUrl(selectedVideo.video)}
-            autoPlay
-            loop
-            preload="metadata"
-            className="profile-video-player"
-          />
+          <div className="profile-video-stage">
+            <video
+              ref={videoRef}
+              src={getVideoUrl(selectedVideo.video)}
+              poster={getVideoPosterUrl(selectedVideo.video)}
+              loop
+              playsInline
+              preload="none"
+              tabIndex={0}
+              aria-label="Profile video player"
+              className="profile-video-player"
+              onClick={toggleSelectedVideoPlayback}
+              onKeyDown={handleSelectedVideoKeyDown}
+              onPlay={() => setIsSelectedVideoPlaying(true)}
+              onPause={() => setIsSelectedVideoPlaying(false)}
+            />
+
+            {!isSelectedVideoPlaying && (
+              <button
+                type="button"
+                className="profile-video-play-button"
+                onClick={toggleSelectedVideoPlayback}
+                aria-label="Play video"
+              >
+                <FaPlay size={22} />
+              </button>
+            )}
+          </div>
 
           <div className="profile-video-action-bar">
             <div className="action">

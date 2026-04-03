@@ -21,6 +21,7 @@ const upload = multer({
 routes.post('/add',authFoodPartner.authFoodPartner,upload.single('video'),foodcontroller.addFood); 
 routes.get('/',  foodcontroller.getAllFoods);
 routes.get('/saved', authFoodPartner.authUserOrFoodPartner, foodcontroller.savedFoodItems);
+routes.delete('/bulk-delete', authFoodPartner.authFoodPartner, foodcontroller.deleteFoods);
 
 routes.get('/partner/:partnerId', foodcontroller.getFoodsByPartner);
 routes.post('/:foodId/comment', authFoodPartner.authUserOrFoodPartner, foodcontroller.addComment);

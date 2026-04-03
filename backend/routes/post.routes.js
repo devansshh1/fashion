@@ -34,12 +34,12 @@ router.post("/upload/video", upload.single("video"), async (req, res) => {
 // 🔥 NEW ROUTES
 router.get("/", postc.getAllPosts); // all posts (with optional category filter)
 router.get("/top", postc.getTopTrending); // overall top 5 (filterable)
-router.get("/saved", authUser, postc.getSavedPosts); // NEW - get user's saved posts
+router.get("/saved", authUserOrFoodPartner, postc.getSavedPosts); // NEW - get saved posts
 // Interactions
 router.post("/upload", authUserOrFoodPartner, upload.single("image"), postc.uploadPost);
-router.post("/:postId/like", authUser, postc.togglePostLike);
-router.post("/:postId/save", authUser, postc.togglePostSave);
-router.post("/:postId/comment", authUser, postc.addPostComment);
+router.post("/:postId/like", authUserOrFoodPartner, postc.togglePostLike);
+router.post("/:postId/save", authUserOrFoodPartner, postc.togglePostSave);
+router.post("/:postId/comment", authUserOrFoodPartner, postc.addPostComment);
 router.get("/:postId/comments", postc.getPostComments);
 
 module.exports = router;

@@ -1,10 +1,18 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import PostCard from "../components/PostCard";
 import API from "../api/API";
 
 function TopTrending() {
+  const { category: routeCategory } = useParams();
+  const normalizedRouteCategory =
+    !routeCategory || routeCategory.toLowerCase() === "all" ? "" : routeCategory;
   const [posts, setPosts] = useState([]);
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState(normalizedRouteCategory);
+
+  useEffect(() => {
+    setCategory(normalizedRouteCategory);
+  }, [normalizedRouteCategory]);
 
   const fetchPosts = async () => {
     const resp = await API.get(`/api/posts/top?category=${category}`);
@@ -22,7 +30,7 @@ function TopTrending() {
   <div className="header-text">
     
    
-    <p className=" text-transparent  bg-clip-text">
+    <p className="premium-copy-accent font-bold text-6xl bg-gradient-to-r from-purple-500 to-pink-500 ">
       Discover the most admired looks
     </p>
   </div>

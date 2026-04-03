@@ -1,4 +1,5 @@
 import axios from "axios";
+import { authSession } from "../auth/sessionStorage";
 
 const trimTrailingSlash = (value = "") => value.replace(/\/+$/, "");
 const isAbsoluteUrl = (value = "") => /^https?:\/\//i.test(value);
@@ -57,8 +58,10 @@ const API = axios.create({
 API.interceptors.request.use(
   (config) => {
     try {
-      const partnerToken = localStorage.getItem("partnerToken");
-      const userToken = localStorage.getItem("userToken");
+      const partnerToken =
+        authSession.getPartnerToken() || localStorage.getItem("partnerToken");
+      const userToken =
+        authSession.getUserToken() || localStorage.getItem("userToken");
       const token = partnerToken || userToken;
 
       if (token) {

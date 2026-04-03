@@ -1,16 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import API from "../api/API";
 
 function UploadPost() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { category: routeCategory } = useParams();
+  const normalizedRouteCategory =
+    !routeCategory || routeCategory.toLowerCase() === "all" ? "" : routeCategory;
   const [authChecking, setAuthChecking] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [name, setName] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(normalizedRouteCategory);
   const [image, setImage] = useState(null);
+
+  useEffect(() => {
+    setSelectedCategory(normalizedRouteCategory);
+  }, [normalizedRouteCategory]);
 
   useEffect(() => {
     let isMounted = true;
@@ -105,7 +112,7 @@ function UploadPost() {
     await API.post("/api/posts/upload", formData);
 
     alert("Post uploaded successfully 🚀");
-    navigate("/category/view");
+    navigate(`/category/${selectedCategory}`);
 
   } catch (err) {
     const status = err.response?.status;

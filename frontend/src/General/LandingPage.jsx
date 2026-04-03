@@ -311,7 +311,7 @@ Where Style Goes Viral
 <BackgroundGradient className="rounded-xl px-8 py-4">
   <button
     className="bg-transparent text-white font-semibold cursor-pointer tracking-tight"
-    onClick={() => navigate("/category/Aesthetic/view")}
+    onClick={() => navigate("/category/all")}
   >
     Find Your Aesthetic →
   </button>

@@ -89,7 +89,7 @@ function PostCard({ post, refresh }) {
       <div className="comment-list">
         {comments.map((c) => (
           <div key={c._id} className="comment-item">
-            <strong>{c.user.name}</strong> {c.text}
+            <strong>{c.user?.name || c.partner?.name || "User"}</strong> {c.text}
           </div>
         ))}
       </div>

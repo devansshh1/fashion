@@ -3,6 +3,7 @@ import { FaHeart, FaRegCommentDots, FaBookmark } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import API, { getAssetUrl } from "../api/API";
+import BottomNav from "./BottomNav";
 
 
 
@@ -38,7 +39,7 @@ async function commentOnFood(foodId, comment) {
     }
 }
 
-function ReelCard({ videoData }) {
+function ReelCard({ videoData, isActive }) {
 const { user } = useContext(AuthContext);
 const navigate = useNavigate();
 const [showComments, setShowComments] = useState(false);
@@ -62,27 +63,42 @@ const requireLogin = () => {
 };
 
     useEffect(() => {
+        const player = videoRef.current;
+
+        if (!player) {
+            return undefined;
+        }
+
+        if (typeof isActive === "boolean") {
+            if (isActive) {
+                player.play().catch(() => {});
+            } else {
+                player.pause();
+            }
+
+            return undefined;
+        }
 
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
                     if (entry.isIntersecting) {
-                        videoRef.current?.play();
+                        player.play().catch(() => {});
                     } else {
-                        videoRef.current?.pause();
+                        player.pause();
                     }
                 });
             },
             { threshold: 0.7 }
         );
 
-        if (videoRef.current) observer.observe(videoRef.current);
+        observer.observe(player);
 
         return () => {
-            if (videoRef.current) observer.unobserve(videoRef.current);
+            observer.unobserve(player);
         };
 
-    }, []);
+    }, [isActive]);
 
   const openWebsite = () => {
 
@@ -250,6 +266,8 @@ const requireLogin = () => {
     </button>
 
 </div>
+
+            <BottomNav />
 
         </div>
     );

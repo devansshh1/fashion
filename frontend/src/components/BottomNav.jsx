@@ -1,5 +1,5 @@
 import React from "react";
-import { FaHome, FaBookmark } from "react-icons/fa";
+import { FaBookmark } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 function BottomNav() {
@@ -8,17 +8,15 @@ function BottomNav() {
 
     return (
         <div className="bottom-nav">
-
-            <div onClick={() => navigate("/")}>
-                <FaHome size={22} />
-                <p>home</p>
-            </div>
-
-            <div onClick={() => navigate("/saved")}>
+            <button
+                type="button"
+                className="bottom-nav-button"
+                onClick={() => navigate("/saved")}
+                aria-label="Open saved reels"
+            >
                 <FaBookmark size={22} />
                 <p>saved</p>
-            </div>
-
+            </button>
         </div>
     );
 }

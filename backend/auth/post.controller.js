@@ -90,10 +90,15 @@ async function getTopTrending(req, res) {
 async function togglePostLike(req, res) {
   try {
     const { postId } = req.params;
-    const userId = req.user._id;
+    const actorId = req.user?._id || req.foodPartner?._id;
+    const actorQuery = req.user ? { user: actorId } : { partner: actorId };
+
+    if (!actorId) {
+      return res.status(401).json({ message: "Please login first" });
+    }
 
     const existingLike = await Like.findOne({
-      user: userId,
+      ...actorQuery,
       contentId: postId,
       contentType: "post"
     });
@@ -107,7 +112,7 @@ async function togglePostLike(req, res) {
       post.likesCount -= 1;
     } else {
       await Like.create({
-        user: userId,
+        ...actorQuery,
         contentId: postId,
         contentType: "post"
       });
@@ -138,10 +143,13 @@ async function togglePostLike(req, res) {
 async function togglePostSave(req, res) {
   try {
     const { postId } = req.params;
-    const userId = req.user._id;
+    const actorId = req.user?._id || req.foodPartner?._id;
+    const actorQuery = req.user ? { user: actorId } : { partner: actorId };
+
+    if (!actorId) return res.status(401).json({ message: "Please login first" });
 
     const existingSave = await Save.findOne({
-      user: userId,
+      ...actorQuery,
       contentId: postId,
       contentType: "post"
     });
@@ -154,7 +162,7 @@ async function togglePostSave(req, res) {
       post.savesCount -= 1;
     } else {
       await Save.create({
-        user: userId,
+        ...actorQuery,
         contentId: postId,
         contentType: "post"
       });
@@ -185,11 +193,14 @@ async function addPostComment(req, res) {
   try {
     const { postId } = req.params;
     const { text } = req.body;
+    const actorId = req.user?._id || req.foodPartner?._id;
+    const actorPayload = req.user ? { user: actorId } : { partner: actorId };
 
     if (!text) return res.status(400).json({ message: "Comment required" });
+    if (!actorId) return res.status(401).json({ message: "Please login first" });
 
     await Comment.create({
-      user: req.user._id,
+      ...actorPayload,
       contentId: postId,
       contentType: "post",
       text
@@ -223,6 +234,7 @@ async function getPostComments(req, res) {
       contentType: "post"
     })
       .populate("user", "name")
+      .populate("partner", "name")
       .sort({ createdAt: -1 });
 
     res.json({ comments });
@@ -234,10 +246,15 @@ async function getPostComments(req, res) {
 }
 async function getSavedPosts(req, res) {
   try {
-    const userId = req.user._id;
+    const actorId = req.user?._id || req.foodPartner?._id;
+    const actorQuery = req.user ? { user: actorId } : { partner: actorId };
+
+    if (!actorId) {
+      return res.status(401).json({ message: "Please login first" });
+    }
 
     const saves = await Save.find({
-      user: userId,
+      ...actorQuery,
       contentType: "post"
     });
 
