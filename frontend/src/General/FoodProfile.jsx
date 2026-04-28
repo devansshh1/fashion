@@ -114,8 +114,14 @@ function FoodProfile() {
 
     const [baseUrl, query = ""] = videoUrl.split("?");
     const posterUrl = `${baseUrl}/ik-thumbnail.jpg`;
+    const params = new URLSearchParams(query);
 
-    return query ? `${posterUrl}?${query}` : posterUrl;
+    // ImageKit thumbnail selection uses a time offset, so this grabs
+    // an early frame instead of the default first frame.
+    params.set("tr", "so-0.08,w-400");
+
+    const finalQuery = params.toString();
+    return finalQuery ? `${posterUrl}?${finalQuery}` : posterUrl;
   };
 
   const getProfileImageUrl = (imagePath) => {
